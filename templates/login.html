@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- عنوان هر صفحه را تغییر بده -->
+    <title>ورود | کتاب‌به‌کتاب</title>
+
+    <!-- توضیحات هر صفحه را تغییر بده -->
+    <meta name="description" content="وارد حساب کاربری‌ات در کتاب‌به‌کتاب شو.">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="icon" href="{{ url_for('static', filename='images/logo.png') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
+</head>
+
+<body>
+
+    <!-- =====================================================
+         HEADER
+    ===================================================== -->
+    <header class="site-header">
+        <div class="nav">
+            <!-- Logo -->
+            <a href="{{ url_for('serve_static_file', filename='index.html') }}">
+                <div class="brand">
+                    <img src="{{ url_for('static', filename='images/logo.png') }}" alt="لوگوی کتاب‌به‌کتاب" style="width: 70px;">
+                    کتاب‌به‌کتاب
+                </div>
+            </a>
+
+            <!-- Navigation -->
+            <nav class="nav-links" id="primary-navigation">
+                <a href="{{ url_for('serve_static_file', filename='books.html') }}">کتاب‌ها</a>
+                <a href="{{ url_for('serve_static_file', filename='process.html') }}">روند کار</a>
+                <a href="{{ url_for('serve_static_file', filename='community.html') }}">باشگاه خوانندگان</a>
+                <a href="{{ url_for('serve_static_file', filename='about.html') }}">درباره‌ی ما</a>
+                <a href="{{ url_for('serve_static_file', filename='contact.html') }}">ارتباط با ما</a>
+            </nav>
+
+            <!-- Actions -->
+            <div class="nav-actions">
+                <a href="{{ url_for('serve_static_file', filename='login.html') }}" class="btn-login">ورود</a>
+                <a href="{{ url_for('serve_static_file', filename='upload.html') }}" class="nav-cta">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
+                        <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" />
+                    </svg>
+                    <span class="nav-cta-text">بارگذاری کتاب</span>
+                </a>
+            </div>
+
+            <!-- Mobile Menu -->
+            <button class="menu-btn" type="button" aria-label="باز کردن منو" aria-controls="primary-navigation" aria-expanded="false">
+                ☰
+            </button>
+        </div>
+    </header>
+
+    <!-- =====================================================
+         MAIN CONTENT
+         محتوای هر صفحه را اینجا قرار بده
+    ===================================================== -->
+    <main>
+        <!-- محتوای اصلی: فرمِ دومرحله‌ایِ ورود (ایمیل، سپس کد تأیید) -->
+        <section class="page-content">
+            <div class="wrap">
+                <div class="auth-container reveal">
+                    <div class="auth-card">
+
+                        <!-- حالت ورود موفق: پنل شخصیِ کاربر (کتاب‌های خودش را می‌بیند و می‌تواند حذف کند) -->
+                        <div class="auth-success" id="login-success">
+                            <div class="icon">
+                                <svg width="26" height="26" viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                            </div>
+                            <h2 id="dashboard-greeting">خوش آمدی!</h2>
+                            <p>این پنل توئه؛ کتاب‌هایی که بارگذاری کرده‌ای اینجان.</p>
+
+                            <div id="my-books-list" style="text-align:right; margin:20px 0;"></div>
+                            <p id="my-books-empty" style="display:none; color:var(--ink-soft);">هنوز کتابی بارگذاری نکرده‌ای.</p>
+
+                            <a href="{{ url_for('serve_static_file', filename='upload.html') }}" class="submit-btn" style="text-decoration:none; display:inline-block; margin-bottom:10px;">بارگذاری کتاب جدید</a>
+                            <button type="button" class="back-link" id="logout-btn">خروج از حساب</button>
+                        </div>
+
+                        <!-- مرحله‌ی ورود: ایمیل و رمز عبور -->
+                        <div id="login-step-email">
+                            <h2>ورود به حساب کاربری</h2>
+                            <p class="step-desc">ایمیل و رمز عبورت را وارد کن.</p>
+
+                            <div class="field" id="field-login-email">
+                                <label for="login-email">ایمیل</label>
+                                <input type="email" id="login-email" placeholder="you@example.com">
+                                <span class="error-msg">لطفاً یک ایمیل معتبر وارد کن.</span>
+                            </div>
+
+                            <div class="field" id="field-login-password">
+                                <label for="login-password">رمز عبور</label>
+                                <input type="password" id="login-password" placeholder="رمز عبورت را وارد کن">
+                                <span class="error-msg">ایمیل یا رمز عبور اشتباه است.</span>
+                            </div>
+
+                            <button type="button" class="submit-btn" id="send-code-btn">ورود</button>
+                        </div>
+
+                    </div>
+
+                    <p class="auth-switch" id="auth-switch-text">
+                        حساب کاربری نداری؟ <a href="{{ url_for('serve_static_file', filename='register.html') }}">ثبت‌نام کن</a>
+                    </p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+
+    <!-- =====================================================
+         JAVASCRIPT
+    ===================================================== -->
+    <script src="{{ url_for('static', filename='js/login.js') }}" defer></script>
+
+</body>
+</html>

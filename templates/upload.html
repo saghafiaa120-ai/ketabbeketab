@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- عنوان هر صفحه را تغییر بده -->
+    <title>بارگذاری کتاب | کتاب‌به‌کتاب</title>
+
+    <!-- توضیحات هر صفحه را تغییر بده -->
+    <meta name="description" content="کتابی که تمامش کرده‌ای را در کتاب‌به‌کتاب ثبت کن تا برای امانت، امانت با ودیعه یا فروش در دسترس دیگران باشد.">
+
+  <link rel="icon" href="{{ url_for('static', filename='images/logo.png') }}">
+
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/upload.css') }}">
+</head>
+
+<body>
+
+    <!-- =====================================================
+         HEADER
+    ===================================================== -->
+    <header class="site-header">
+        <div class="nav">
+            <!-- Logo -->
+            <a href="{{ url_for('serve_static_file', filename='index.html') }}">
+                <div class="brand">
+                    <img src="{{ url_for('static', filename='images/logo.png') }}" alt="لوگوی کتاب‌به‌کتاب" style="width: 70px;">
+                    کتاب‌به‌کتاب
+                </div>
+            </a>
+
+            <!-- Navigation -->
+            <nav class="nav-links" id="primary-navigation">
+                <a href="{{ url_for('serve_static_file', filename='books.html') }}">کتاب‌ها</a>
+                <a href="{{ url_for('serve_static_file', filename='process.html') }}">روند کار</a>
+                <a href="{{ url_for('serve_static_file', filename='community.html') }}">باشگاه خوانندگان</a>
+                <a href="{{ url_for('serve_static_file', filename='about.html') }}">درباره‌ی ما</a>
+                <a href="{{ url_for('serve_static_file', filename='contact.html') }}">ارتباط با ما</a>
+            </nav>
+
+            <!-- Actions -->
+            <div class="nav-actions">
+                <a href="{{ url_for('serve_static_file', filename='login.html') }}" class="btn-login">ورود</a>
+                <a href="{{ url_for('serve_static_file', filename='upload.html') }}" class="nav-cta">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
+                        <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" />
+                    </svg>
+                    <span class="nav-cta-text">بارگذاری کتاب</span>
+                </a>
+            </div>
+
+            <!-- Mobile Menu -->
+            <button class="menu-btn" type="button" aria-label="باز کردن منو" aria-controls="primary-navigation" aria-expanded="false">
+                ☰
+            </button>
+        </div>
+    </header>
+
+    <!-- =====================================================
+         MAIN CONTENT
+         محتوای هر صفحه را اینجا قرار بده
+    ===================================================== -->
+    <main>
+        <section class="page-header">
+            <div class="wrap">
+                <img src="{{ url_for('static', filename='images/ketab.png') }}" style="width: 100%; height: 100%; object-fit: cover;">
+            </div>
+        </section>
+
+        <!-- محتوای اصلی: فرم ثبت مشخصات کتاب -->
+        <section class="page-content">
+            <div class="wrap">
+                <div class="upload-layout reveal">
+
+                    <form class="upload-form" id="upload-form" novalidate>
+                        <p class="form-section-title">جلد کتاب</p>
+
+                        <!-- دراپ‌زون آپلود جلد کتاب (فقط پیش‌نمایش سمت کاربر؛ فایلی جایی ارسال نمی‌شود) -->
+                        <div class="cover-dropzone" id="cover-dropzone">
+                            <img class="cover-thumb" id="cover-thumb" src="" alt="پیش‌نمایش جلد کتاب">
+                            <svg class="cover-placeholder-icon" width="26" height="26" viewBox="0 0 24 24" fill="none"><path d="M12 16V4M12 4l-4 4M12 4l4 4" stroke="#1B6062" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 16v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2" stroke="#1B6062" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                            <p>برای آپلود جلد کتاب کلیک کن یا تصویر را اینجا رها کن</p>
+                            <input type="file" id="cover-input" accept="image/*">
+                        </div>
+
+                        <p class="form-section-title">مشخصات کتاب</p>
+
+                        <div class="field" id="field-title">
+                            <label for="title">عنوان کتاب</label>
+                            <input type="text" id="title" name="title" placeholder="مثلاً شاهنامه">
+                            <span class="error-msg">لطفاً عنوان کتاب را وارد کن.</span>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="field" id="field-author">
+                                <label for="author">نویسنده</label>
+                                <input type="text" id="author" name="author" placeholder="مثلا ابوالقاسم فردوسی">
+                                <span class="error-msg">لطفاً نام نویسنده را وارد کن.</span>
+                            </div>
+                            <div class="field" id="field-genre">
+                                <label for="genre">ژانر</label>
+                                <select id="genre" name="genre">
+                                    <option value="">انتخاب کن</option>
+                                    <option value="novel">رمان</option>
+                                    <option value="story">داستان کوتاه</option>
+                                    <option value="poetry">شعر و ادبیات</option>
+                                    <option value="history">تاریخ</option>
+                                    <option value="science">علمی</option>
+                                    <option value="kids">کودک و نوجوان</option>
+                                    <option value="other">سایر</option>
+                                </select>
+                                <span class="error-msg">لطفاً یک ژانر انتخاب کن.</span>
+                            </div>
+                        </div>
+
+                        <div class="field" id="field-condition">
+                            <label for="condition">وضعیت جلد و صفحات</label>
+                            <select id="condition" name="condition">
+                                <option value="">انتخاب کن</option>
+                                <option value="new">نو</option>
+                                <option value="like-new">در حد نو</option>
+                                <option value="good">قابل قبول</option>
+                            </select>
+                            <span class="error-msg">لطفاً وضعیت کتاب را مشخص کن.</span>
+                        </div>
+
+                        <p class="form-section-title">نوع اشتراک‌گذاری</p>
+
+                        <div class="field" id="field-share-type">
+                            <div class="share-type-group">
+                                <div class="share-type-option">
+                                    <input type="radio" name="share-type" id="share-free" value="free" checked>
+                                    <label for="share-free">امانت رایگان</label>
+                                </div>
+                                <div class="share-type-option">
+                                    <input type="radio" name="share-type" id="share-deposit" value="deposit">
+                                    <label for="share-deposit">امانت با ودیعه</label>
+                                </div>
+                                <div class="share-type-option">
+                                    <input type="radio" name="share-type" id="share-sale" value="sale">
+                                    <label for="share-sale">فروش</label>
+                                </div>
+                            </div>
+                            <span class="error-msg">لطفاً نوع اشتراک‌گذاری را انتخاب کن.</span>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="field" id="field-duration">
+                                <label for="duration">مهلت امانت <span class="hint">(روز)</span></label>
+                                <input type="number" id="duration" name="duration" value="14" min="1">
+                            </div>
+                            <div class="field conditional-field" id="field-deposit">
+                                <label for="deposit-amount">مبلغ ودیعه <span class="hint">(تومان)</span></label>
+                                <input type="number" id="deposit-amount" name="deposit-amount" min="0" placeholder="مثلاً ۱۰۰٬۰۰۰">
+                                <span class="error-msg">لطفاً مبلغ ودیعه را وارد کن.</span>
+                            </div>
+                            <div class="field conditional-field" id="field-price">
+                                <label for="sale-price">قیمت فروش <span class="hint">(تومان)</span></label>
+                                <input type="number" id="sale-price" name="sale-price" min="0" placeholder="مثلاً ۱۵۰٬۰۰۰">
+                                <span class="error-msg">لطفاً قیمت فروش را وارد کن.</span>
+                            </div>
+                        </div>
+
+                        <p class="form-section-title">محل تحویل</p>
+
+                        <div class="field" id="field-address">
+                            <label for="address">آدرس</label>
+                            <textarea id="address" name="address" placeholder="مثلاً تهران، علامه‌حلی‌۲"></textarea>
+                            <span class="error-msg">لطفاً آدرس محل تحویل را وارد کن.</span>
+                        </div>
+
+                        <p class="form-section-title">توضیحات</p>
+
+                        <div class="field" id="field-description">
+                            <label for="description">توضیح کوتاه <span class="hint">(اختیاری)</span></label>
+                            <textarea id="description" name="description" placeholder="نکته‌ای درباره‌ی کتاب یا شرایط امانت..."></textarea>
+                        </div>
+
+                        <button type="submit" class="submit-btn">
+                            ثبت و انتشار کتاب
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>
+                        </button>
+                        <div class="form-success" id="form-success">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                            <span>کتابت با موفقیت در قفسه‌ی مشترک ثبت شد.</span>
+                        </div>
+                    </form>
+
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- =====================================================
+         FOOTER
+    ===================================================== -->
+    <footer>
+        <div class="wrap">
+            <div class="footer-top">
+                <!-- Brand -->
+                <div class="footer-brand">
+                    <div class="brand">
+                        <img src="{{ url_for('static', filename='images/logo.png') }}" alt="لوگوی کتاب‌به‌کتاب" style="width: 60px;">
+                        کتاب‌به‌کتاب
+                    </div>
+                </div>
+
+                <!-- Quick Access -->
+                <div>
+                    <h5>دسترسی سریع</h5>
+                    <ul>
+                        <li><a href="{{ url_for('serve_static_file', filename='books.html') }}">کتاب‌ها</a></li>
+                        <li><a href="{{ url_for('serve_static_file', filename='process.html') }}">راهنمای امانت</a></li>
+                    </ul>
+                </div>
+
+                <!-- Support -->
+                <div>
+                    <h5>پشتیبانی</h5>
+                    <ul>
+                        <li><a href="process.html#faq">سوالات متداول</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <span>© کتاب‌به‌کتاب. همه‌ی حقوق محفوظ است.</span>
+                <span>ساخته‌شده با ❤️ برای کتاب‌خوان‌ها</span>
+            </div>
+        </div>
+    </footer>
+
+    <!-- =====================================================
+         JAVASCRIPT
+    ===================================================== -->
+    <script src="{{ url_for('static', filename='js/upload.js') }}" defer></script>
+
+</body>
+</html>

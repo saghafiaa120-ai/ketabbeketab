@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- عنوان هر صفحه را تغییر بده -->
+    <title>هری‌ پاتر و سنگ جادو | کتاب‌به‌کتاب</title>
+
+    <!-- توضیحات هر صفحه را تغییر بده -->
+    <meta name="description" content="هری‌ پاتر و سنگ جادو نوشته‌ی جی.کی.رولینگ — جزئیات کتاب و درخواست امانت در کتاب‌به‌کتاب.">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="icon" href="{{ url_for('static', filename='images/logo.png') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/book1.css') }}">
+</head>
+
+<body>
+
+    <!-- =====================================================
+         HEADER
+    ===================================================== -->
+    <header class="site-header">
+        <div class="nav">
+            <!-- Logo -->
+            <a href="../index.html">
+                <div class="brand">
+                    <img src="{{ url_for('static', filename='images/logo.png') }}" alt="لوگوی کتاب‌به‌کتاب" style="width: 70px;">
+                    کتاب‌به‌کتاب
+                </div>
+            </a>
+
+            <!-- Navigation -->
+            <nav class="nav-links" id="primary-navigation">
+                <a href="../books.html">کتاب‌ها</a>
+                <a href="../process.html">روند کار</a>
+                <a href="../community.html">باشگاه خوانندگان</a>
+                <a href="../about.html">درباره‌ی ما</a>
+                <a href="../contact.html">ارتباط با ما</a>
+            </nav>
+
+            <!-- Actions -->
+            <div class="nav-actions">
+                <a href="../login.html" class="btn-login">ورود</a>
+                <a href="../upload.html" class="nav-cta">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
+                        <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" />
+                    </svg>
+                    <span class="nav-cta-text">بارگذاری کتاب</span>
+                </a>
+            </div>
+
+            <!-- Mobile Menu -->
+            <button class="menu-btn" type="button" aria-label="باز کردن منو" aria-controls="primary-navigation" aria-expanded="false">
+                ☰
+            </button>
+        </div>
+    </header>
+
+    <!-- =====================================================
+         MAIN CONTENT
+    ===================================================== -->
+    <main>
+
+        <!-- کاورِ بزرگِ کتاب که بالای صفحه را می‌پوشاند -->
+        <section class="book-hero reveal">
+            <img src="/covers/3a604bbbf5d5e636edec4f5a33f61bc40b7c8c73_1684874096.jpg" alt="هری‌ پاتر و سنگ جادو" onerror="this.style.display='none'">
+            <a href="../books.html" class="book-hero-back">← بازگشت به فهرست کتاب‌ها</a>
+            <span class="badge free">امانت رایگان</span>
+            <div class="book-hero-content">
+                <h1>هری‌ پاتر و سنگ جادو</h1>
+                <p class="author">جی.کی.رولینگ</p>
+            </div>
+        </section>
+
+        <section class="page-content">
+            <div class="wrap">
+
+                <div class="book-detail reveal">
+
+                    <!-- اطلاعات کتاب -->
+                    <div class="book-info-panel">
+                        <div class="info-chips">
+                            <span class="info-chip">ژانر: کودک و نوجوان</span>
+                            <span class="info-chip">وضعیت: در حد نو</span>
+                            <span class="info-chip">📍 تهران، علامه‌حلی‌۲</span>
+                        </div>
+
+                        <p class="book-description">اولین جلد از مجموعه‌ی هری پاتر؛ داستان پسری که در تولد یازده‌سالگی‌اش می‌فهمد جادوگر است و راهی مدرسه‌ی هاگوارتز می‌شود. نسخه‌ای تمیز و کامل، مناسب برای اولین بار خواندن یا دوباره‌خوانی.</p>
+                    </div>
+
+                    <!-- کارتِ درخواست -->
+                    <div class="request-card">
+                        <div class="request-row">
+                            <span>صاحب کتاب</span>
+                            <span>امیر</span>
+                        </div>
+                        <div class="request-row">
+                            <span>مهلت امانت</span>
+                            <span>۱۴ روز</span>
+                        </div>
+
+                        <button type="button" class="request-btn" id="request-btn">امانت می‌گیرم</button>
+                        <div class="request-success" id="request-success">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                            <span>درخواستت برای «هری‌ پاتر و سنگ جادو» برای امیر ارسال شد. به‌محض تأیید، از طریق بخش گفت‌وگو بهت اطلاع داده می‌شود.</span>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- ناوبری بین کتاب قبلی و بعدی -->
+                <div class="book-nav">
+                    <span class="placeholder">.</span>
+                    <a href="book2.html">کتاب بعدی: بیست‌هزار فرسنگ زیر دریا →</a>
+                </div>
+
+            </div>
+        </section>
+    </main>
+
+    <!-- =====================================================
+         FOOTER
+    ===================================================== -->
+    <footer>
+        <div class="wrap">
+            <div class="footer-top">
+                <!-- Brand -->
+                <div class="footer-brand">
+                    <div class="brand">
+                        <img src="{{ url_for('static', filename='images/logo.png') }}" alt="لوگوی کتاب‌به‌کتاب" style="width: 60px;">
+                        کتاب‌به‌کتاب
+                    </div>
+                </div>
+
+                <!-- Quick Access -->
+                <div>
+                    <h5>دسترسی سریع</h5>
+                    <ul>
+                        <li><a href="../books.html">کتاب‌ها</a></li>
+                        <li><a href="../categories.html">دسته‌بندی‌ها</a></li>
+                        <li><a href="../process.html">راهنمای امانت</a></li>
+                    </ul>
+                </div>
+
+                <!-- Support -->
+                <div>
+                    <h5>پشتیبانی</h5>
+                    <ul>
+                        <li><a href="../faq.html">سوالات متداول</a></li>
+                        <li><a href="../rules.html">قوانین امانت</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <span>© کتاب‌به‌کتاب. همه‌ی حقوق محفوظ است.</span>
+                <span>ساخته‌شده با ❤️ برای کتاب‌خوان‌ها</span>
+            </div>
+        </div>
+    </footer>
+
+    <!-- =====================================================
+         JAVASCRIPT
+    ===================================================== -->
+    <script src="{{ url_for('static', filename='js/book1.js') }}" defer></script>
+
+</body>
+</html>

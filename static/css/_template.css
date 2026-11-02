@@ -1,0 +1,734 @@
+@font-face {
+  font-family: 'Vazirmatn';
+  src: url('/static/fonts/Vazirmatn-Black.ttf') format('truetype');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* ---------- Variables ---------- */
+        :root {
+            --paper: #F3E9D2;
+            --paper-soft: #FAF4E6;
+            --ink: #1C2B2B;
+            --ink-soft: #4B5B5A;
+
+            --teal-900: #0C3839;
+            --teal-800: #124B4C;
+            --teal-700: #1B6062;
+
+            --gold: #C9982F;
+            --gold-soft: #E6C877;
+
+            --pomegranate: #A73B2E;
+            --pomegranate-soft: #C65C4C;
+
+            --line: #D8C9A3;
+            --shadow: 0 12px 30px -12px rgba(12, 56, 57, .35);
+
+            --radius: 14px;
+            --maxw: 1180px;
+        }
+
+        /* ---------- Reset ---------- */
+        * {
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Vazirmatn', sans-serif;
+            background: var(--paper);
+            color: var(--ink);
+            line-height: 1.8;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        img {
+            max-width: 100%;
+            display: block;
+        }
+
+        a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        ul {
+            margin: 0;
+            padding: 0;
+            list-style: none;
+        }
+
+        .wrap {
+            max-width: var(--maxw);
+            margin: 0 auto;
+            padding: 0 28px;
+        }
+
+        /* ---------- Animations ---------- */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(26px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes pulseRing {
+            0% { box-shadow: 0 0 0 0 rgba(167, 59, 46, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(167, 59, 46, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(167, 59, 46, 0); }
+        }
+
+        @keyframes popIn {
+            from { opacity: 0; transform: scale(.9) translateY(6px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        /* ---------- Scroll Reveal ---------- */
+        .reveal {
+            opacity: 0;
+            transform: translateY(28px);
+            transition:
+                opacity .7s cubic-bezier(.2, .7, .2, 1),
+                transform .7s cubic-bezier(.2, .7, .2, 1);
+        }
+
+        .reveal.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* ---------- Header ---------- */
+        header.site-header {
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            background: rgba(243, 233, 210, .92);
+            backdrop-filter: blur(6px);
+            border-bottom: 1px solid var(--line);
+            animation: fadeIn .5s ease both;
+        }
+
+        .nav {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 28px;
+            max-width: var(--maxw);
+            margin: 0 auto;
+            gap: 20px;
+        }
+
+        /* ---------- Brand ---------- */
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 800;
+            font-size: 20px;
+            color: var(--teal-900);
+            flex: none;
+            transition: transform .25s ease;
+        }
+
+        .brand:hover {
+            transform: translateY(-1px);
+        }
+
+        .brand svg,
+        .brand img {
+            flex: none;
+            transition: transform .4s ease;
+        }
+
+        .brand:hover svg {
+            transform: rotate(-8deg);
+        }
+
+        /* ---------- Nav Links ---------- */
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 28px;
+            font-weight: 500;
+            color: var(--ink-soft);
+        }
+
+        .nav-links a {
+            position: relative;
+            transition: color .15s ease;
+            padding-bottom: 2px;
+        }
+
+        .nav-links a::after {
+            content: "";
+            position: absolute;
+            right: 0;
+            left: 0;
+            bottom: -2px;
+            height: 2px;
+            background: var(--pomegranate);
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform .25s ease;
+        }
+
+        .nav-links a:hover {
+            color: var(--pomegranate);
+        }
+
+        .nav-links a:hover::after {
+            transform: scaleX(1);
+        }
+
+        /* ---------- Nav Actions ---------- */
+        .nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex: none;
+            white-space: nowrap;
+        }
+
+        .nav-actions .btn-login {
+            color: var(--teal-900);
+            font-weight: 700;
+            font-size: 14.5px;
+            padding: 10px 18px;
+            border-radius: 999px;
+            border: 1.5px solid var(--teal-700);
+            transition: .15s;
+        }
+
+        .nav-actions .btn-login:hover {
+            background: var(--teal-900);
+            color: var(--paper-soft);
+            transform: translateY(-1px);
+        }
+
+        /* ---------- Upload Button (CTA) ---------- */
+        .nav-cta {
+            background: var(--pomegranate);
+            color: var(--paper-soft);
+            padding: 10px 20px;
+            border-radius: 999px;
+            font-weight: 700;
+            font-size: 14.5px;
+            box-shadow: var(--shadow);
+            transition:
+                transform .15s ease,
+                background .15s ease,
+                box-shadow .15s ease,
+                padding .2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            animation: pulseRing 2.6s ease-in-out infinite;
+        }
+
+        .nav-cta:hover {
+            background: #8f3125;
+            transform: translateY(-2px) scale(1.03);
+            animation-play-state: paused;
+        }
+
+        .nav-cta svg {
+            flex: none;
+            transition: transform .3s ease;
+        }
+
+        .nav-cta:hover svg {
+            transform: rotate(90deg);
+        }
+
+        /* ---------- Mobile Menu Button ---------- */
+        .menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 26px;
+            color: var(--teal-900);
+            cursor: pointer;
+            transition: transform .2s ease;
+        }
+
+        .menu-btn:active {
+            transform: scale(.85) rotate(90deg);
+        }
+
+        /* =====================================================
+           MAIN CONTENT
+        ===================================================== */
+        main {
+            min-height: 65vh;
+        }
+
+        .page-content {
+            padding: 44px 0 90px;
+        }
+
+        /* ---------- Book Hero (کاورِ بزرگ که بالای صفحه را می‌پوشاند) ---------- */
+        .book-hero {
+            position: relative;
+            width: 100%;
+            height: 460px;
+            overflow: hidden;
+            background: linear-gradient(155deg, var(--teal-700), var(--teal-900));
+        }
+
+        .book-hero img {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: top center;
+        }
+
+        .book-hero::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(180deg, rgba(12,56,57,.15) 0%, rgba(12,56,57,.55) 65%, rgba(12,56,57,.9) 100%);
+        }
+
+        .book-hero-back {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 3;
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--paper-soft);
+            background: rgba(12, 56, 57, .45);
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(250, 244, 230, .25);
+            border-radius: 999px;
+            padding: 9px 16px;
+            transition: background-color .2s ease;
+        }
+
+        .book-hero-back:hover {
+            background: rgba(12, 56, 57, .7);
+        }
+
+        .book-hero .badge {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 3;
+            font-size: 12.5px;
+            font-weight: 800;
+            padding: 7px 16px;
+            border-radius: 999px;
+            color: var(--teal-900);
+        }
+
+        .badge.free { background: var(--gold-soft); }
+        .badge.deposit { background: #E7C9BE; }
+        .badge.sale { background: #CFE3D6; }
+
+        .book-hero-content {
+            position: absolute;
+            right: 0;
+            left: 0;
+            bottom: 0;
+            z-index: 2;
+            padding: 40px 28px;
+            max-width: var(--maxw);
+            margin: 0 auto;
+        }
+
+        .book-hero-content h1 {
+            font-size: 36px;
+            margin: 0 0 8px;
+            color: var(--paper-soft);
+        }
+
+        .book-hero-content .author {
+            font-size: 16px;
+            margin: 0;
+            color: #DCE7E4;
+        }
+
+        /* ---------- Book Body Layout (اطلاعات کتاب + کارتِ درخواست) ---------- */
+        .book-detail {
+            display: grid;
+            grid-template-columns: 1.3fr .9fr;
+            gap: 46px;
+            align-items: flex-start;
+            margin-top: 40px;
+        }
+
+        .book-info-panel h1 {
+            font-size: 30px;
+            margin: 0 0 8px;
+            color: var(--teal-900);
+        }
+
+        .book-info-panel .author {
+            font-size: 15.5px;
+            color: var(--ink-soft);
+            margin: 0 0 20px;
+        }
+
+        .info-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 24px;
+        }
+
+        .info-chip {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--teal-900);
+            background: var(--paper-soft);
+            border: 1px solid var(--line);
+            border-radius: 999px;
+            padding: 7px 14px;
+        }
+
+        .book-description {
+            font-size: 15px;
+            color: var(--ink-soft);
+            margin: 0 0 28px;
+            max-width: 60ch;
+        }
+
+        /* ---------- Request Card (جزئیات درخواست + دکمه‌ی اصلی) ---------- */
+        .request-card {
+            background: var(--paper-soft);
+            border: 1px solid var(--line);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 26px;
+            max-width: 420px;
+        }
+
+        .request-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 14px;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--line);
+        }
+
+        .request-row:last-of-type {
+            border-bottom: none;
+        }
+
+        .request-row span:first-child {
+            color: var(--ink-soft);
+        }
+
+        .request-row span:last-child {
+            font-weight: 700;
+            color: var(--teal-900);
+        }
+
+        .request-btn {
+            width: 100%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            background: var(--pomegranate);
+            color: var(--paper-soft);
+            border: none;
+            border-radius: 999px;
+            padding: 14px 26px;
+            font-family: inherit;
+            font-weight: 700;
+            font-size: 15.5px;
+            cursor: pointer;
+            margin-top: 18px;
+            transition: transform .2s ease, background .2s ease, box-shadow .2s ease;
+        }
+
+        .request-btn:hover {
+            background: #8f3125;
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+        }
+
+        .request-btn:active {
+            transform: translateY(0) scale(.98);
+        }
+
+        .request-btn.sent {
+            background: var(--teal-700);
+            cursor: default;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .request-btn.sent:hover {
+            background: var(--teal-700);
+            transform: none;
+            box-shadow: none;
+        }
+
+        /* پیام موفقیت؛ چون این پلتفرم بک‌اند ندارد، فقط یک وضعیت بصری است */
+        .request-success {
+            display: none;
+            align-items: flex-start;
+            gap: 10px;
+            background: rgba(27, 96, 98, .1);
+            border: 1px solid var(--teal-700);
+            color: var(--teal-900);
+            border-radius: 10px;
+            padding: 14px 16px;
+            font-size: 13.5px;
+            margin-top: 16px;
+            animation: popIn .35s ease both;
+        }
+
+        .request-success.visible {
+            display: flex;
+        }
+
+        .request-success svg {
+            flex: none;
+            color: var(--teal-700);
+            margin-top: 2px;
+        }
+
+        /* ---------- Book Navigation (کتاب قبلی / بعدی) ---------- */
+        .book-nav {
+            display: flex;
+            justify-content: space-between;
+            gap: 16px;
+            margin-top: 60px;
+            padding-top: 24px;
+            border-top: 1px solid var(--line);
+        }
+
+        .book-nav a {
+            font-size: 13.5px;
+            font-weight: 700;
+            color: var(--teal-700);
+        }
+
+        .book-nav a:hover {
+            color: var(--teal-900);
+        }
+
+        .book-nav .placeholder {
+            visibility: hidden;
+        }
+
+        /* =====================================================
+           FOOTER
+        ===================================================== */
+        footer {
+            background: var(--teal-900);
+            color: #CBD9D6;
+            padding: 34px 0 18px;
+            margin-top: 40px;
+        }
+
+        .footer-top {
+            display: grid;
+            grid-template-columns: 1.3fr 1fr 1fr;
+            gap: 24px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, .08);
+        }
+
+        .footer-brand .brand {
+            color: var(--paper-soft);
+            margin-bottom: 0;
+            font-size: 17px;
+        }
+
+        footer h5 {
+            color: var(--gold-soft);
+            font-size: 12.5px;
+            margin: 0 0 10px;
+        }
+
+        footer li {
+            margin-bottom: 6px;
+            font-size: 13px;
+        }
+
+        footer a {
+            transition:
+                color .2s ease,
+                padding-right .2s ease;
+        }
+
+        footer a:hover {
+            color: var(--gold-soft);
+            padding-right: 4px;
+        }
+
+        .footer-bottom {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            padding-top: 14px;
+            font-size: 12px;
+            color: #8DA29D;
+        }
+
+        /* =====================================================
+           RESPONSIVE
+        ===================================================== */
+        @media (max-width: 980px) {
+            .nav-links {
+                display: none;
+            }
+
+            .nav-links.open {
+                display: flex;
+                position: absolute;
+                top: 100%;
+                right: 0;
+                left: 0;
+                flex-direction: column;
+                align-items: stretch;
+                gap: 0;
+                padding: 10px 28px 16px;
+                background: var(--paper);
+                border-bottom: 1px solid var(--line);
+                animation: fadeInUp .3s ease both;
+            }
+
+            .nav-links.open a {
+                padding: 10px 0;
+            }
+
+            .menu-btn {
+                display: block;
+            }
+
+            .book-detail {
+                grid-template-columns: 1fr;
+            }
+
+            .book-hero {
+                height: 300px;
+            }
+
+            .request-card {
+                max-width: none;
+            }
+        }
+
+        @media (max-width: 680px) {
+            .nav {
+                padding: 10px 16px;
+                gap: 8px;
+            }
+
+            .brand {
+                font-size: 0;
+                gap: 0;
+            }
+
+            .brand img {
+                width: 46px !important;
+                height: auto;
+            }
+
+            .nav-actions {
+                gap: 6px;
+            }
+
+            .nav-actions .btn-login,
+            .nav-cta {
+                font-size: 12.5px;
+                padding: 8px 10px;
+            }
+
+            .footer-top {
+                grid-template-columns: 1fr;
+            }
+
+            .book-hero {
+                height: 220px;
+            }
+
+            .book-hero-content h1 {
+                font-size: 22px;
+            }
+
+            .book-hero-content .author {
+                font-size: 13.5px;
+            }
+
+            .book-hero-back {
+                font-size: 12px;
+                padding: 7px 12px;
+                top: 14px;
+                right: 14px;
+            }
+
+            .book-hero .badge {
+                font-size: 11px;
+                padding: 6px 12px;
+                top: 14px;
+                left: 14px;
+            }
+
+            .book-nav {
+                flex-direction: column;
+                gap: 8px;
+            }
+        }
+
+        @media (max-width: 380px) {
+            .nav {
+                padding-inline: 10px;
+            }
+
+            .brand img {
+                width: 38px !important;
+            }
+
+            .nav-actions {
+                gap: 4px;
+            }
+
+            .nav-actions .btn-login,
+            .nav-cta {
+                font-size: 11.5px;
+                padding: 7px 8px;
+            }
+
+            .nav-cta svg {
+                width: 13px;
+                height: 13px;
+            }
+        }
+
+        /* ---------- Reduced Motion ---------- */
+        @media (prefers-reduced-motion: reduce) {
+            *,
+            *::before,
+            *::after {
+                animation-duration: .001ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: .001ms !important;
+                scroll-behavior: auto !important;
+            }
+        }

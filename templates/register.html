@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- عنوان هر صفحه را تغییر بده -->
+    <title>ثبت‌نام | کتاب‌به‌کتاب</title>
+
+    <!-- توضیحات هر صفحه را تغییر بده -->
+    <meta name="description" content="یک حساب کاربری تازه در کتاب‌به‌کتاب بساز و کتاب‌هایت را به اشتراک بگذار.">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="icon" href="{{ url_for('static', filename='images/logo.png') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/register.css') }}">
+</head>
+
+<body>
+
+    <!-- =====================================================
+         HEADER
+    ===================================================== -->
+    <header class="site-header">
+        <div class="nav">
+            <!-- Logo -->
+            <a href="{{ url_for('serve_static_file', filename='index.html') }}">
+                <div class="brand">
+                    <img src="{{ url_for('static', filename='images/logo.png') }}" alt="لوگوی کتاب‌به‌کتاب" style="width: 70px;">
+                    کتاب‌به‌کتاب
+                </div>
+            </a>
+
+            <!-- Navigation -->
+            <nav class="nav-links" id="primary-navigation">
+                <a href="{{ url_for('serve_static_file', filename='books.html') }}">کتاب‌ها</a>
+                <a href="{{ url_for('serve_static_file', filename='process.html') }}">روند کار</a>
+                <a href="{{ url_for('serve_static_file', filename='community.html') }}">باشگاه خوانندگان</a>
+                <a href="{{ url_for('serve_static_file', filename='about.html') }}">درباره‌ی ما</a>
+                <a href="{{ url_for('serve_static_file', filename='contact.html') }}">ارتباط با ما</a>
+            </nav>
+
+            <!-- Actions -->
+            <div class="nav-actions">
+                <a href="{{ url_for('serve_static_file', filename='login.html') }}" class="btn-login">ورود</a>
+                <a href="{{ url_for('serve_static_file', filename='upload.html') }}" class="nav-cta">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
+                        <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" />
+                    </svg>
+                    <span class="nav-cta-text">بارگذاری کتاب</span>
+                </a>
+            </div>
+
+            <!-- Mobile Menu -->
+            <button class="menu-btn" type="button" aria-label="باز کردن منو" aria-controls="primary-navigation" aria-expanded="false">
+                ☰
+            </button>
+        </div>
+    </header>
+
+    <!-- =====================================================
+         MAIN CONTENT
+         محتوای هر صفحه را اینجا قرار بده
+    ===================================================== -->
+    <main>
+
+
+        <!-- محتوای اصلی: فرمِ دومرحله‌ایِ ثبت‌نام (مشخصات، سپس کد تأیید) -->
+        <section class="page-content">
+            <div class="wrap">
+                <div class="auth-container reveal">
+                    <div class="auth-card">
+
+                        <!-- حالت موفقیت: بعد از تأیید صحیح کد نمایش داده می‌شود -->
+                        <div class="auth-success" id="register-success">
+                            <div class="icon">
+                                <svg width="26" height="26" viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                            </div>
+                            <h2>حساب تو ساخته شد!</h2>
+                            <p>حالا می‌تونی وارد کتاب‌به‌کتاب بشی و کتاب اولت رو بارگذاری کنی.</p>
+                            <a href="{{ url_for('serve_static_file', filename='upload.html') }}" class="submit-btn" style="text-decoration:none;">بارگذاری اولین کتاب</a>
+                        </div>
+
+                        <!-- مرحله‌ی ۱: مشخصات ثبت‌نام -->
+                        <div id="register-step-details">
+                            <h2>ثبت‌نام در کتاب‌به‌کتاب</h2>
+                            <p class="step-desc">اطلاعاتت را وارد کن تا حساب کاربری‌ات ساخته شود.</p>
+
+                            <div class="field" id="field-name">
+                                <label for="reg-name">نام و نام‌خانوادگی</label>
+                                <input type="text" id="reg-name" placeholder="مثلاً محمدحسین رضایی">
+                                <span class="error-msg">لطفاً نامت را وارد کن.</span>
+                            </div>
+
+                            <div class="field" id="field-email">
+                                <label for="reg-email">ایمیل</label>
+                                <input type="email" id="reg-email" placeholder="you@example.com">
+                                <span class="error-msg">لطفاً یک ایمیل معتبر وارد کن.</span>
+                            </div>
+
+                            <div class="field" id="field-phone">
+                                <label for="reg-phone">شماره موبایل</label>
+                                <input type="tel" id="reg-phone" inputmode="numeric" maxlength="11" placeholder="۰۹۱۲۳۴۵۶۷۸۹">
+                                <span class="error-msg">لطفاً شماره موبایل را به‌درستی وارد کن (مثلاً 09123456789).</span>
+                            </div>
+
+                            <div class="field" id="field-password">
+                                <label for="reg-password">رمز عبور</label>
+                                <div class="password-field">
+                                    <input type="password" id="reg-password" placeholder="حداقل ۸ نویسه">
+                                    <button type="button" class="password-toggle" data-target="reg-password">نمایش</button>
+                                </div>
+                                <div class="password-meter" id="password-meter">
+                                    <div class="bar"></div>
+                                    <div class="bar"></div>
+                                    <div class="bar"></div>
+                                </div>
+                                <p class="password-strength-label" id="password-strength-label">حداقل ۸ نویسه، بهتر است شامل عدد و حرف بزرگ باشد.</p>
+                                <span class="error-msg">رمز عبور باید حداقل ۸ نویسه باشد.</span>
+                            </div>
+
+                            <div class="field" id="field-password-confirm">
+                                <label for="reg-password-confirm">تکرار رمز عبور</label>
+                                <div class="password-field">
+                                    <input type="password" id="reg-password-confirm" placeholder="رمز عبور را دوباره وارد کن">
+                                    <button type="button" class="password-toggle" data-target="reg-password-confirm">نمایش</button>
+                                </div>
+                                <span class="error-msg">رمز عبور و تکرار آن یکسان نیستند.</span>
+                            </div>
+
+                            <div class="terms-field" id="field-terms">
+                                <input type="checkbox" id="reg-terms">
+                                <label for="reg-terms">با <a href="{{ url_for('serve_static_file', filename='rules.html') }}">قوانین امانت</a> کتاب‌به‌کتاب موافقم.</label>
+                            </div>
+                            <p class="error-msg" id="terms-error" style="display:none; margin-top:-10px; margin-bottom:14px;">برای ادامه باید قوانین امانت را بپذیری.</p>
+
+                            <button type="button" class="submit-btn" id="register-submit-btn">ثبت‌نام و دریافت کد تأیید</button>
+                        </div>
+
+                        <!-- مرحله‌ی ۲: وارد کردن کد تأیید -->
+                        <div id="register-step-code" class="step-hidden">
+                            <h2>کد تأیید را وارد کن</h2>
+                            <p class="step-desc">کد به <strong id="register-email-display"></strong> ارسال شد.</p>
+
+                            <div class="field otp-field" id="field-register-code">
+                                <label for="register-code">کد ۶ رقمی</label>
+                                <input type="text" id="register-code" inputmode="numeric" maxlength="6" placeholder="------">
+                                <span class="error-msg">کد واردشده درست نیست.</span>
+                            </div>
+
+                            <button type="button" class="submit-btn" id="register-verify-btn">تأیید و تکمیل ثبت‌نام</button>
+                            <button type="button" class="back-link" id="register-back-btn">ویرایش اطلاعات</button>
+                        </div>
+
+                    </div>
+
+                    <p class="auth-switch" id="register-switch-text">
+                        قبلاً ثبت‌نام کرده‌ای؟ <a href="{{ url_for('serve_static_file', filename='login.html') }}">وارد شو</a>
+                    </p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- =====================================================
+         JAVASCRIPT
+    ===================================================== -->
+    <script src="{{ url_for('static', filename='js/register.js') }}" defer></script>
+
+</body>
+</html>

@@ -1,0 +1,675 @@
+@font-face {
+      font-family: 'Vazirmatn';
+      src: url('/static/fonts/Vazirmatn-Black.ttf') format('truetype');
+      font-weight: 100 900;
+      font-style: normal;
+      font-display: swap;
+    }
+        /* ---------- Variables ---------- */
+        :root {
+            --paper: #F3E9D2;
+            --paper-soft: #FAF4E6;
+            --ink: #1C2B2B;
+            --ink-soft: #4B5B5A;
+
+            --teal-900: #0C3839;
+            --teal-800: #124B4C;
+            --teal-700: #1B6062;
+
+            --gold: #C9982F;
+            --gold-soft: #E6C877;
+
+            --pomegranate: #A73B2E;
+            --pomegranate-soft: #C65C4C;
+
+            --line: #D8C9A3;
+            --shadow: 0 12px 30px -12px rgba(12, 56, 57, .35);
+
+            --radius: 14px;
+            --maxw: 1180px;
+        }
+
+        /* ---------- Reset ---------- */
+        * {
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Vazirmatn', sans-serif;
+            background: var(--paper);
+            color: var(--ink);
+            line-height: 1.8;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        img {
+            max-width: 100%;
+            display: block;
+        }
+
+        a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        ul {
+            margin: 0;
+            padding: 0;
+            list-style: none;
+        }
+
+        .wrap {
+            max-width: var(--maxw);
+            margin: 0 auto;
+            padding: 0 28px;
+        }
+
+        /* ---------- Animations ---------- */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(26px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes pulseRing {
+            0% { box-shadow: 0 0 0 0 rgba(167, 59, 46, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(167, 59, 46, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(167, 59, 46, 0); }
+        }
+
+        /* ---------- Scroll Reveal ---------- */
+        .reveal {
+            opacity: 0;
+            transform: translateY(28px);
+            transition:
+                opacity .7s cubic-bezier(.2, .7, .2, 1),
+                transform .7s cubic-bezier(.2, .7, .2, 1);
+        }
+
+        .reveal.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* ---------- Stagger Reveal (برای کارت‌های مأموریت/چشم‌انداز) ---------- */
+        .reveal-stagger.visible .stagger-item {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .stagger-item {
+            opacity: 0;
+            transform: translateY(22px);
+            transition: opacity .6s ease, transform .6s ease;
+        }
+
+        .stagger-item:nth-child(1) { transition-delay: .05s; }
+        .stagger-item:nth-child(2) { transition-delay: .15s; }
+
+        /* ---------- Header ---------- */
+        header.site-header {
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            background: rgba(243, 233, 210, .92);
+            backdrop-filter: blur(6px);
+            border-bottom: 1px solid var(--line);
+            animation: fadeIn .5s ease both;
+        }
+
+        .nav {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 28px;
+            max-width: var(--maxw);
+            margin: 0 auto;
+            gap: 20px;
+        }
+
+        /* ---------- Brand ---------- */
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 800;
+            font-size: 20px;
+            color: var(--teal-900);
+            flex: none;
+            transition: transform .25s ease;
+        }
+
+        .brand:hover {
+            transform: translateY(-1px);
+        }
+
+        .brand svg,
+        .brand img {
+            flex: none;
+            transition: transform .4s ease;
+        }
+
+        .brand:hover svg {
+            transform: rotate(-8deg);
+        }
+
+        /* ---------- Nav Links ---------- */
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 28px;
+            font-weight: 500;
+            color: var(--ink-soft);
+        }
+
+        .nav-links a {
+            position: relative;
+            transition: color .15s ease;
+            padding-bottom: 2px;
+        }
+
+        .nav-links a::after {
+            content: "";
+            position: absolute;
+            right: 0;
+            left: 0;
+            bottom: -2px;
+            height: 2px;
+            background: var(--pomegranate);
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform .25s ease;
+        }
+
+        .nav-links a:hover {
+            color: var(--pomegranate);
+        }
+
+        .nav-links a:hover::after {
+            transform: scaleX(1);
+        }
+
+        /* ---------- Nav Actions ---------- */
+        .nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex: none;
+            white-space: nowrap;
+        }
+
+        .nav-actions .btn-login {
+            color: var(--teal-900);
+            font-weight: 700;
+            font-size: 14.5px;
+            padding: 10px 18px;
+            border-radius: 999px;
+            border: 1.5px solid var(--teal-700);
+            transition: .15s;
+        }
+
+        .nav-actions .btn-login:hover {
+            background: var(--teal-900);
+            color: var(--paper-soft);
+            transform: translateY(-1px);
+        }
+
+        /* ---------- Upload Button (CTA) ---------- */
+        .nav-cta {
+            background: var(--pomegranate);
+            color: var(--paper-soft);
+            padding: 10px 20px;
+            border-radius: 999px;
+            font-weight: 700;
+            font-size: 14.5px;
+            box-shadow: var(--shadow);
+            transition:
+                transform .15s ease,
+                background .15s ease,
+                box-shadow .15s ease,
+                padding .2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            animation: pulseRing 2.6s ease-in-out infinite;
+        }
+
+        .nav-cta:hover {
+            background: #8f3125;
+            transform: translateY(-2px) scale(1.03);
+            animation-play-state: paused;
+        }
+
+        .nav-cta svg {
+            flex: none;
+            transition: transform .3s ease;
+        }
+
+        .nav-cta:hover svg {
+            transform: rotate(90deg);
+        }
+
+        /* ---------- Mobile Menu Button ---------- */
+        .menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 26px;
+            color: var(--teal-900);
+            cursor: pointer;
+            transition: transform .2s ease;
+        }
+
+        .menu-btn:active {
+            transform: scale(.85) rotate(90deg);
+        }
+
+        /* =====================================================
+           MAIN CONTENT
+           محتوای هر صفحه را از این قسمت شروع کن
+        ===================================================== */
+        main {
+            min-height: 65vh;
+        }
+
+        .page-header {
+            background: var(--teal-900);
+            color: var(--paper-soft);
+            padding:  0;
+            text-align: center;
+        }
+
+        .page-header h1 {
+            margin: 0 0 10px;
+            font-size: 36px;
+        }
+
+        .page-header p {
+            margin: 0;
+            color: #D9E4E1;
+        }
+
+        .page-content {
+            padding: 70px 0;
+        }
+
+        /* ---------- About Story (نقل‌قول + متن معرفی + فهرست شعارها) ---------- */
+        .about-story {
+            background: var(--teal-900);
+            color: var(--paper-soft);
+            border-radius: var(--radius);
+            padding: 56px 44px;
+            display: grid;
+            grid-template-columns: .9fr 1.1fr;
+            gap: 50px;
+            align-items: center;
+            margin-bottom: 70px;
+        }
+
+        .about-story blockquote {
+            font-size: 22px;
+            line-height: 1.7;
+            font-weight: 700;
+            margin: 0;
+            border-right: 3px solid var(--gold);
+            padding-right: 20px;
+            color: var(--paper-soft);
+        }
+
+        .about-story-body p {
+            color: #D9E4E1;
+            font-size: 15px;
+            margin: 0 0 16px;
+        }
+
+        .about-taglines {
+            display: grid;
+            gap: 12px;
+            margin-top: 22px;
+        }
+
+        .about-taglines li {
+            display: flex;
+            gap: 10px;
+            align-items: flex-start;
+            font-size: 14.5px;
+            color: var(--gold-soft);
+            font-weight: 600;
+            transition: transform .2s ease;
+        }
+
+        .about-taglines li:hover {
+            transform: translateX(-4px);
+        }
+
+        .about-taglines svg {
+            flex: none;
+            margin-top: 3px;
+        }
+
+        /* ---------- Mission & Vision (دو کارت مأموریت و چشم‌انداز) ---------- */
+        .mv-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin-bottom: 70px;
+        }
+
+        .mv-card {
+            background: var(--paper-soft);
+            border: 1px solid var(--line);
+            border-radius: var(--radius);
+            padding: 34px;
+            box-shadow: var(--shadow);
+            transition: transform .25s ease, box-shadow .25s ease;
+        }
+
+        .mv-card:hover {
+            transform: translateY(-6px);
+        }
+
+        .mv-card .icon {
+            width: 46px;
+            height: 46px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 18px;
+            transition: transform .35s ease;
+        }
+
+        .mv-card:hover .icon {
+            transform: rotate(-8deg) scale(1.08);
+        }
+
+        .mv-card.mission .icon {
+            background: rgba(167, 59, 46, .12);
+            color: var(--pomegranate);
+        }
+
+        .mv-card.vision .icon {
+            background: rgba(201, 152, 47, .15);
+            color: var(--gold);
+        }
+
+        .mv-card h3 {
+            margin: 0 0 10px;
+            font-size: 19px;
+            color: var(--teal-900);
+        }
+
+        .mv-card p {
+            margin: 0;
+            color: var(--ink-soft);
+            font-size: 15px;
+        }
+
+        /* ---------- Values (چرا کتاب‌به‌کتاب: چند نکته‌ی کوتاه) ---------- */
+        .section-head {
+            text-align: center;
+            max-width: 640px;
+            margin: 0 auto 40px;
+        }
+
+        .section-head h2 {
+            font-size: 28px;
+            margin: 0 0 12px;
+            color: var(--teal-900);
+        }
+
+        .section-head p {
+            color: var(--ink-soft);
+            font-size: 15.5px;
+            margin: 0;
+        }
+
+        .values-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+
+        .value-card {
+            background: var(--paper-soft);
+            border: 1px solid var(--line);
+            border-radius: var(--radius);
+            padding: 26px 22px;
+            text-align: center;
+            transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease;
+        }
+
+        .value-card:hover {
+            transform: translateY(-6px);
+            box-shadow: var(--shadow);
+            border-color: var(--gold);
+        }
+
+        .value-card .icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            margin: 0 auto 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(27, 96, 98, .1);
+            color: var(--teal-700);
+        }
+
+        .value-card h3 {
+            font-size: 15.5px;
+            margin: 0 0 6px;
+            color: var(--teal-900);
+        }
+
+        .value-card p {
+            font-size: 13.5px;
+            color: var(--ink-soft);
+            margin: 0;
+        }
+
+        /* =====================================================
+           FOOTER
+        ===================================================== */
+        footer {
+            background: var(--teal-900);
+            color: #CBD9D6;
+            padding: 34px 0 18px;
+            margin-top: 40px;
+        }
+
+        .footer-top {
+            display: grid;
+            grid-template-columns: 1.3fr 1fr 1fr;
+            gap: 24px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, .08);
+        }
+
+        .footer-brand .brand {
+            color: var(--paper-soft);
+            margin-bottom: 0;
+            font-size: 17px;
+        }
+
+        footer h5 {
+            color: var(--gold-soft);
+            font-size: 12.5px;
+            margin: 0 0 10px;
+        }
+
+        footer li {
+            margin-bottom: 6px;
+            font-size: 13px;
+        }
+
+        footer a {
+            transition:
+                color .2s ease,
+                padding-right .2s ease;
+        }
+
+        footer a:hover {
+            color: var(--gold-soft);
+            padding-right: 4px;
+        }
+
+        .footer-bottom {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            padding-top: 14px;
+            font-size: 12px;
+            color: #8DA29D;
+        }
+
+        /* =====================================================
+           RESPONSIVE
+        ===================================================== */
+        @media (max-width: 980px) {
+            .nav-links {
+                display: none;
+            }
+
+            .nav-links.open {
+                display: flex;
+                position: absolute;
+                top: 100%;
+                right: 0;
+                left: 0;
+                flex-direction: column;
+                align-items: stretch;
+                gap: 0;
+                padding: 10px 28px 16px;
+                background: var(--paper);
+                border-bottom: 1px solid var(--line);
+                animation: fadeInUp .3s ease both;
+            }
+
+            .nav-links.open a {
+                padding: 10px 0;
+            }
+
+            .menu-btn {
+                display: block;
+            }
+
+            .about-story {
+                grid-template-columns: 1fr;
+                padding: 40px 28px;
+            }
+
+            .mv-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .values-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 680px) {
+            .nav {
+                padding: 10px 16px;
+                gap: 8px;
+            }
+
+            .brand {
+                font-size: 0;
+                gap: 0;
+            }
+
+            .brand img {
+                width: 46px !important;
+                height: auto;
+            }
+
+            .nav-actions {
+                gap: 6px;
+            }
+
+            .nav-actions .btn-login,
+            .nav-cta {
+                font-size: 12.5px;
+                padding: 8px 10px;
+            }
+
+            .page-header {
+                padding: 50px 0;
+            }
+
+            .page-header h1 {
+                font-size: 28px;
+            }
+
+            .footer-top {
+                grid-template-columns: 1fr;
+            }
+
+            .about-story {
+                padding: 32px 20px;
+            }
+
+            .about-story blockquote {
+                font-size: 19px;
+            }
+
+            .values-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 380px) {
+            .nav {
+                padding-inline: 10px;
+            }
+
+            .brand img {
+                width: 38px !important;
+            }
+
+            .nav-actions {
+                gap: 4px;
+            }
+
+            .nav-actions .btn-login,
+            .nav-cta {
+                font-size: 11.5px;
+                padding: 7px 8px;
+            }
+
+            .nav-cta svg {
+                width: 13px;
+                height: 13px;
+            }
+        }
+
+        /* ---------- Reduced Motion ---------- */
+        @media (prefers-reduced-motion: reduce) {
+            *,
+            *::before,
+            *::after {
+                animation-duration: .001ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: .001ms !important;
+                scroll-behavior: auto !important;
+            }
+        }
