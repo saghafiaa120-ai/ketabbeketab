@@ -83,21 +83,17 @@
             phoneInput.value = phoneInput.value.replace(/[^0-9]/g, '').slice(0, 11);
         });
 
-        /* ---------- ثبت‌نام دومرحله‌ای با کدِ نمایشی (چون بک‌اند وجود ندارد) ---------- */
+        /* ---------- ثبت‌نام با ایمیل و رمز عبور (بدون تأیید ایمیل) ---------- */
         const nameInput = document.getElementById('reg-name');
         const emailInput = document.getElementById('reg-email');
         const passwordConfirmInput = document.getElementById('reg-password-confirm');
         const termsCheckbox = document.getElementById('reg-terms');
-        const registerCodeInput = document.getElementById('register-code');
+        const submitBtn = document.getElementById('register-submit-btn');
 
         const stepDetails = document.getElementById('register-step-details');
-        const stepCode = document.getElementById('register-step-code');
         const registerSuccess = document.getElementById('register-success');
         const registerSwitchText = document.getElementById('register-switch-text');
-
-        const emailDisplay = document.getElementById('register-email-display');
         const termsError = document.getElementById('terms-error');
-        let registeredEmail = '';
 
         function isValidEmail(value) {
             return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
@@ -113,7 +109,7 @@
             field.classList.toggle('success', isValid);
         }
 
-        document.getElementById('register-submit-btn').addEventListener('click', async () => {
+        async function submitRegistration() {
             const nameValid = nameInput.value.trim().length > 1;
             const emailValid = isValidEmail(emailInput.value.trim());
             const phoneValid = isValidPhone(phoneInput.value.trim());
@@ -131,8 +127,9 @@
             const allValid = nameValid && emailValid && phoneValid && passwordValid && passwordConfirmValid && termsValid;
             if (!allValid) return;
 
-            const submitBtn = document.getElementById('register-submit-btn');
+            document.querySelector('#field-email .error-msg').textContent = 'لطفاً یک ایمیل معتبر وارد کن.';
             submitBtn.disabled = true;
+            submitBtn.textContent = 'در حال ساخت حساب...';
 
             try {
                 const res = await fetch('/api/register', {
@@ -151,54 +148,23 @@
                     setFieldState('field-email', false);
                     document.querySelector('#field-email .error-msg').textContent = data.error || 'خطایی رخ داد.';
                     submitBtn.disabled = false;
+                    submitBtn.textContent = 'ساخت حساب کاربری';
                     return;
                 }
 
-                registeredEmail = emailInput.value.trim().toLowerCase();
-                emailDisplay.textContent = registeredEmail;
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'ساخت حساب کاربری';
                 stepDetails.classList.add('step-hidden');
-                stepCode.classList.remove('step-hidden');
+                registerSuccess.classList.add('visible');
                 registerSwitchText.style.display = 'none';
-                if (!data.emailSent) {
-                    alert('حساب ساخته شد، اما ارسال ایمیل انجام نشد. تنظیمات SMTP سرور را بررسی کن.');
-                }
+
+                const loginBtn = document.querySelector('.nav-actions .btn-login');
+                if (loginBtn && data.name) loginBtn.textContent = data.name;
             } catch (err) {
                 alert('اتصال به سرور برقرار نشد. مطمئن شو Flask در حال اجراست.');
                 submitBtn.disabled = false;
+                submitBtn.textContent = 'ساخت حساب کاربری';
             }
-        });
+        }
 
-        document.getElementById('register-verify-btn').addEventListener('click', async () => {
-            const code = registerCodeInput.value.trim();
-            const valid = /^\d{6}$/.test(code);
-            setFieldState('field-register-code', valid);
-            if (!valid) return;
-            const verifyButton = document.getElementById('register-verify-btn');
-            verifyButton.disabled = true;
-            try {
-                const res = await fetch('/api/verify-email', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email: registeredEmail, code })
-                });
-                const data = await res.json();
-                if (!res.ok) {
-                    setFieldState('field-register-code', false);
-                    document.querySelector('#field-register-code .error-msg').textContent = data.error || 'کد تأیید نادرست است.';
-                    verifyButton.disabled = false;
-                    return;
-                }
-                stepCode.classList.add('step-hidden');
-                registerSuccess.classList.add('visible');
-                setTimeout(() => { window.location.href = 'login.html'; }, 1200);
-            } catch (err) {
-                alert('ارتباط با سرور برقرار نشد.');
-                verifyButton.disabled = false;
-            }
-        });
-
-        document.getElementById('register-back-btn').addEventListener('click', () => {
-            stepCode.classList.add('step-hidden');
-            stepDetails.classList.remove('step-hidden');
-            registerSwitchText.style.display = '';
-        });
+        submitBtn.addEventListener('click', submitRegistration);

@@ -102,7 +102,7 @@
             }
         });
 
-        document.getElementById('send-code-btn').addEventListener('click', async () => {
+        document.getElementById('login-submit-btn').addEventListener('click', async () => {
             const email = loginEmailInput.value.trim();
             const password = loginPasswordInput.value;
             const emailField = document.getElementById('field-login-email');

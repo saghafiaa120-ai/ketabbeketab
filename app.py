@@ -15,15 +15,10 @@
 
 import os
 import uuid
-import hashlib
 import secrets
-import smtplib
 import time
 from collections import defaultdict, deque
 from threading import Lock
-from datetime import datetime, timedelta
-from email.message import EmailMessage
-from hmac import compare_digest
 from html import escape
 from contextlib import contextmanager
 from decimal import Decimal, InvalidOperation
@@ -46,14 +41,6 @@ DB_CONFIG = {
     "database": os.getenv("DB_NAME", "ketabbeketab"),
     "autocommit": False,
 }
-SMTP_HOST = os.getenv("SMTP_HOST", "")
-SMTP_PORT = int(os.getenv("SMTP_PORT", "587"))
-SMTP_USER = os.getenv("SMTP_USER", "")
-SMTP_PASSWORD = os.getenv("SMTP_PASSWORD", "")
-SMTP_FROM = os.getenv("SMTP_FROM", SMTP_USER)
-SMTP_TLS = os.getenv("SMTP_TLS", "1") == "1"
-EMAIL_VERIFICATION_REQUIRED = os.getenv("EMAIL_VERIFICATION_REQUIRED", "1") == "1"
-APP_BASE_URL = os.getenv("APP_BASE_URL", "http://127.0.0.1:5000").rstrip("/")
 MAX_UPLOADS_PER_HOUR = int(os.getenv("MAX_UPLOADS_PER_HOUR", "20"))
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -69,7 +56,6 @@ os.makedirs(GENERATED_BOOKS_DIR, exist_ok=True)
 
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "webp", "gif"}
 SHARE_TYPES = {"free", "deposit", "sale"}
-VERIFICATION_MINUTES = 15
 RATE_LIMIT_STORE = defaultdict(deque)
 RATE_LIMIT_LOCK = Lock()
 
@@ -142,28 +128,6 @@ def db_cursor(dictionary=False):
         db.close()
 
 
-def ensure_runtime_schema():
-    """مهاجرت کوچک و بی‌خطر برای نصب‌های قدیمی که جدول تأیید ایمیل را ندارند."""
-    try:
-        with db_cursor() as (db, cur):
-            cur.execute(
-                """CREATE TABLE IF NOT EXISTS email_verifications (
-                    id INT AUTO_INCREMENT PRIMARY KEY,
-                    user_id INT NOT NULL,
-                    code_hash CHAR(64) NOT NULL,
-                    expires_at DATETIME NOT NULL,
-                    verified_at DATETIME NULL,
-                    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-                    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-                    INDEX idx_verifications_user (user_id, created_at),
-                    INDEX idx_verifications_expiry (expires_at)
-                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"""
-            )
-            db.commit()
-    except MySQLError:
-        app.logger.warning("Runtime schema migration skipped; run schema.sql before enabling email verification")
-
-
 def json_error(message, status=400):
     return jsonify(error=message), status
 
@@ -185,9 +149,6 @@ def request_bucket(prefix, value=""):
     return f"{prefix}:{request.remote_addr or 'unknown'}:{value}"
 
 
-ensure_runtime_schema()
-
-
 def parse_amount(value, label):
     if value in (None, ""):
         return None
@@ -198,36 +159,6 @@ def parse_amount(value, label):
         return int(number)
     except (InvalidOperation, ValueError):
         raise ValueError(f"{label} باید یک عدد صحیح مثبت باشد.")
-
-
-def hash_verification_code(code):
-    return hashlib.sha256(code.encode("utf-8")).hexdigest()
-
-
-def send_verification_email(email, name, code):
-    """ارسال کد با SMTP؛ در صورت تنظیم‌نشدن SMTP، False برمی‌گرداند."""
-    if not SMTP_HOST or not SMTP_FROM:
-        app.logger.warning("SMTP is not configured; verification email was not sent")
-        return False
-    message = EmailMessage()
-    message["Subject"] = "کد تأیید ثبت‌نام کتاب‌به‌کتاب"
-    message["From"] = SMTP_FROM
-    message["To"] = email
-    message.set_content(
-        f"سلام {name}\n\nکد تأیید شما: {code}\nاین کد تا {VERIFICATION_MINUTES} دقیقه معتبر است.\n"
-        f"\nصفحه‌ی ورود: {APP_BASE_URL}/login.html\n\nکتاب‌به‌کتاب"
-    )
-    try:
-        with smtplib.SMTP(SMTP_HOST, SMTP_PORT, timeout=15) as server:
-            if SMTP_TLS:
-                server.starttls()
-            if SMTP_USER:
-                server.login(SMTP_USER, SMTP_PASSWORD)
-            server.send_message(message)
-        return True
-    except (OSError, smtplib.SMTPException):
-        app.logger.exception("Verification email could not be sent")
-        return False
 
 
 def allowed_file(filename):
@@ -387,24 +318,17 @@ def register():
                 (name, email, phone, password_hash),
             )
             user_id = cur.lastrowid
-            code = f"{secrets.randbelow(1000000):06d}"
-            cur.execute(
-                "INSERT INTO email_verifications (user_id, code_hash, expires_at) VALUES (%s, %s, %s)",
-                (user_id, hash_verification_code(code), datetime.utcnow() + timedelta(minutes=VERIFICATION_MINUTES)),
-            )
             db.commit()
     except MySQLError as e:
         app.logger.exception("Registration failed")
         return json_error("ثبت‌نام انجام نشد. دوباره تلاش کنید.", 503)
 
-    email_sent = send_verification_email(email, name, code)
-    return jsonify(
-        success=True,
-        id=user_id,
-        name=name,
-        verificationRequired=EMAIL_VERIFICATION_REQUIRED,
-        emailSent=email_sent,
-    )
+    # بدون مرحله‌ی تأیید ایمیل، کاربر بلافاصله وارد حساب تازه‌اش می‌شود.
+    session.clear()
+    session["user_id"] = user_id
+    session["user_name"] = name
+    session["is_admin"] = False
+    return jsonify(success=True, id=user_id, name=name)
 
 
 @app.route("/api/login", methods=["POST"])
@@ -417,13 +341,7 @@ def login():
 
     try:
         with db_cursor(dictionary=True) as (_db, cur):
-            cur.execute(
-                """SELECT users.*,
-                   EXISTS(SELECT 1 FROM email_verifications ev
-                          WHERE ev.user_id=users.id AND ev.verified_at IS NOT NULL) AS email_verified
-                   FROM users WHERE email=%s""",
-                (email,),
-            )
+            cur.execute("SELECT * FROM users WHERE email=%s", (email,))
             user = cur.fetchone()
     except MySQLError as e:
         app.logger.exception("Login failed")
@@ -431,72 +349,12 @@ def login():
 
     if not user or not check_password_hash(user["password_hash"], password):
         return jsonify(error="ایمیل یا رمز عبور اشتباه است."), 401
-    if EMAIL_VERIFICATION_REQUIRED and not user.get("email_verified"):
-        return json_error("ابتدا کد تأیید ارسال‌شده به ایمیل را وارد کن.", 403)
 
     session.clear()
     session["user_id"] = user["id"]
     session["user_name"] = user["name"]
     session["is_admin"] = bool(user.get("is_admin"))
     return jsonify(success=True, id=user["id"], name=user["name"])
-
-
-@app.route("/api/verify-email", methods=["POST"])
-def verify_email():
-    data = request.get_json(silent=True) or {}
-    email = (data.get("email") or "").strip().lower()
-    code = (data.get("code") or "").strip()
-    if rate_limited(request_bucket("verify", email), 8):
-        return json_error("تعداد تلاش برای کد تأیید زیاد است؛ بعداً دوباره امتحان کن.", 429)
-    if "@" not in email or len(code) != 6 or not code.isdigit():
-        return json_error("ایمیل یا کد تأیید معتبر نیست.")
-
-    try:
-        with db_cursor(dictionary=True) as (db, cur):
-            cur.execute(
-                """SELECT ev.id, ev.code_hash, u.id AS user_id, u.name
-                   FROM email_verifications ev JOIN users u ON u.id=ev.user_id
-                   WHERE u.email=%s AND ev.verified_at IS NULL
-                     AND ev.expires_at > UTC_TIMESTAMP()
-                   ORDER BY ev.created_at DESC LIMIT 1""",
-                (email,),
-            )
-            record = cur.fetchone()
-            if not record or not compare_digest(record["code_hash"], hash_verification_code(code)):
-                return json_error("کد تأیید اشتباه یا منقضی شده است.", 400)
-            cur.execute("UPDATE email_verifications SET verified_at=UTC_TIMESTAMP() WHERE id=%s", (record["id"],))
-            db.commit()
-    except MySQLError:
-        app.logger.exception("Email verification failed")
-        return json_error("تأیید ایمیل انجام نشد.", 503)
-
-    return jsonify(success=True, id=record["user_id"], name=record["name"])
-
-
-@app.route("/api/resend-verification", methods=["POST"])
-def resend_verification():
-    data = request.get_json(silent=True) or {}
-    email = (data.get("email") or "").strip().lower()
-    if rate_limited(request_bucket("resend", email), 3, 900):
-        return json_error("تعداد ارسال مجدد زیاد است؛ کمی بعد دوباره امتحان کن.", 429)
-    if "@" not in email:
-        return json_error("ایمیل معتبر نیست.")
-    try:
-        with db_cursor(dictionary=True) as (db, cur):
-            cur.execute("SELECT id, name FROM users WHERE email=%s", (email,))
-            user = cur.fetchone()
-            if not user:
-                return jsonify(success=True, emailSent=False)
-            code = f"{secrets.randbelow(1000000):06d}"
-            cur.execute(
-                "INSERT INTO email_verifications (user_id, code_hash, expires_at) VALUES (%s, %s, %s)",
-                (user["id"], hash_verification_code(code), datetime.utcnow() + timedelta(minutes=VERIFICATION_MINUTES)),
-            )
-            db.commit()
-    except MySQLError:
-        app.logger.exception("Verification code resend failed")
-        return json_error("ارسال دوباره‌ی کد انجام نشد.", 503)
-    return jsonify(success=True, emailSent=send_verification_email(email, user["name"], code))
 
 
 @app.route("/api/logout", methods=["POST"])

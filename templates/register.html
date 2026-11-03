@@ -68,23 +68,22 @@
     <main>
 
 
-        <!-- محتوای اصلی: فرمِ دومرحله‌ایِ ثبت‌نام (مشخصات، سپس کد تأیید) -->
+        <!-- محتوای اصلی: فرمِ ثبت‌نام (بدون تأیید ایمیل؛ حساب بلافاصله فعال می‌شود) -->
         <section class="page-content">
             <div class="wrap">
                 <div class="auth-container reveal">
                     <div class="auth-card">
 
-                        <!-- حالت موفقیت: بعد از تأیید صحیح کد نمایش داده می‌شود -->
+                        <!-- حالت موفقیت: بعد از ساخت حساب نمایش داده می‌شود -->
                         <div class="auth-success" id="register-success">
                             <div class="icon">
                                 <svg width="26" height="26" viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
                             </div>
                             <h2>حساب تو ساخته شد!</h2>
-                            <p>حالا می‌تونی وارد کتاب‌به‌کتاب بشی و کتاب اولت رو بارگذاری کنی.</p>
+                            <p>وارد شدی؛ حالا می‌تونی کتاب اولت رو بارگذاری کنی.</p>
                             <a href="{{ url_for('serve_static_file', filename='upload.html') }}" class="submit-btn" style="text-decoration:none;">بارگذاری اولین کتاب</a>
                         </div>
 
-                        <!-- مرحله‌ی ۱: مشخصات ثبت‌نام -->
                         <div id="register-step-details">
                             <h2>ثبت‌نام در کتاب‌به‌کتاب</h2>
                             <p class="step-desc">اطلاعاتت را وارد کن تا حساب کاربری‌ات ساخته شود.</p>
@@ -137,22 +136,7 @@
                             </div>
                             <p class="error-msg" id="terms-error" style="display:none; margin-top:-10px; margin-bottom:14px;">برای ادامه باید قوانین امانت را بپذیری.</p>
 
-                            <button type="button" class="submit-btn" id="register-submit-btn">ثبت‌نام و دریافت کد تأیید</button>
-                        </div>
-
-                        <!-- مرحله‌ی ۲: وارد کردن کد تأیید -->
-                        <div id="register-step-code" class="step-hidden">
-                            <h2>کد تأیید را وارد کن</h2>
-                            <p class="step-desc">کد به <strong id="register-email-display"></strong> ارسال شد.</p>
-
-                            <div class="field otp-field" id="field-register-code">
-                                <label for="register-code">کد ۶ رقمی</label>
-                                <input type="text" id="register-code" inputmode="numeric" maxlength="6" placeholder="------">
-                                <span class="error-msg">کد واردشده درست نیست.</span>
-                            </div>
-
-                            <button type="button" class="submit-btn" id="register-verify-btn">تأیید و تکمیل ثبت‌نام</button>
-                            <button type="button" class="back-link" id="register-back-btn">ویرایش اطلاعات</button>
+                            <button type="button" class="submit-btn" id="register-submit-btn">ساخت حساب کاربری</button>
                         </div>
 
                     </div>

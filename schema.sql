@@ -18,19 +18,6 @@ CREATE TABLE IF NOT EXISTS users (
     INDEX idx_users_created_at (created_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- ---------- کدهای تأیید ایمیل ----------
-CREATE TABLE IF NOT EXISTS email_verifications (
-    id             INT AUTO_INCREMENT PRIMARY KEY,
-    user_id        INT NOT NULL,
-    code_hash      CHAR(64) NOT NULL,
-    expires_at     DATETIME NOT NULL,
-    verified_at    DATETIME NULL,
-    created_at     TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-    INDEX idx_verifications_user (user_id, created_at),
-    INDEX idx_verifications_expiry (expires_at)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
 -- ---------- کتاب‌ها ----------
 CREATE TABLE IF NOT EXISTS books (
     id              INT AUTO_INCREMENT PRIMARY KEY,
@@ -52,20 +39,3 @@ CREATE TABLE IF NOT EXISTS books (
     INDEX idx_books_genre (genre),
     INDEX idx_books_share_type (share_type)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-CREATE TABLE IF NOT EXISTS email_verifications (
-    id          INT AUTO_INCREMENT PRIMARY KEY,
-    user_id     INT NOT NULL,
-    code_hash   CHAR(64) NOT NULL,
-    expires_at  DATETIME NOT NULL,
-    verified_at DATETIME NULL,
-    created_at  TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
-    FOREIGN KEY (user_id)
-        REFERENCES users(id)
-        ON DELETE CASCADE,
-
-    INDEX idx_verifications_user (user_id, created_at),
-    INDEX idx_verifications_expiry (expires_at)
-) ENGINE=InnoDB
-  DEFAULT CHARSET=utf8mb4
-  COLLATE=utf8mb4_unicode_ci;
