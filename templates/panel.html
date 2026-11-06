@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>پنل کاربری | کتاب‌به‌کتاب</title>
+    <meta name="description" content="پنل کاربری کتاب‌به‌کتاب: کتاب‌های من، اطلاعات حساب و تنظیمات امنیتی.">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="icon" href="{{ url_for('static', filename='images/logo.png') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/panel.css') }}">
+</head>
+
+<body class="panel-body">
+
+    <!-- =====================================================
+         HEADER
+    ===================================================== -->
+    <header class="site-header">
+        <div class="nav">
+            <a href="{{ url_for('serve_static_file', filename='index.html') }}">
+                <div class="brand">
+                    <img src="{{ url_for('static', filename='images/logo.png') }}" alt="لوگوی کتاب‌به‌کتاب" style="width: 70px;">
+                    کتاب‌به‌کتاب
+                </div>
+            </a>
+
+            <nav class="nav-links" id="primary-navigation">
+                <a href="{{ url_for('serve_static_file', filename='books.html') }}">کتاب‌ها</a>
+                <a href="{{ url_for('serve_static_file', filename='process.html') }}">روند کار</a>
+                <a href="{{ url_for('serve_static_file', filename='community.html') }}">باشگاه خوانندگان</a>
+                <a href="{{ url_for('serve_static_file', filename='about.html') }}">درباره‌ی ما</a>
+                <a href="{{ url_for('serve_static_file', filename='contact.html') }}">ارتباط با ما</a>
+            </nav>
+
+            <div class="nav-actions">
+                <a href="{{ url_for('serve_static_file', filename='login.html') }}" class="btn-login is-current" id="nav-user-name">پنل کاربری</a>
+                <a href="{{ url_for('serve_static_file', filename='upload.html') }}" class="nav-cta">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
+                        <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" />
+                    </svg>
+                    <span class="nav-cta-text">بارگذاری کتاب</span>
+                </a>
+            </div>
+
+            <button class="menu-btn" type="button" aria-label="باز کردن منو" aria-controls="primary-navigation" aria-expanded="false">
+                ☰
+            </button>
+        </div>
+    </header>
+
+    <!-- =====================================================
+         MAIN: PANEL
+    ===================================================== -->
+    <main class="panel-page">
+        <div class="wrap">
+
+            <div class="panel-heading reveal">
+                <div>
+                    <h1>پنل کاربری</h1>
+                    <p>حساب، کتاب‌ها و تنظیماتت را از همین‌جا مدیریت کن.</p>
+                </div>
+                <span class="panel-chip" id="panel-date">‌</span>
+            </div>
+
+            <div class="panel-shell reveal">
+
+                <!-- ---------- SIDEBAR ---------- -->
+                <aside class="panel-side">
+                    <div class="user-card">
+                        <div class="avatar" id="user-avatar">؟</div>
+                        <strong id="side-name">در حال بارگذاری…</strong>
+                        <span id="side-email">‌</span>
+                    </div>
+
+                    <nav class="panel-nav" aria-label="بخش‌های پنل">
+                        <button type="button" class="panel-nav-item active" data-tab="overview">
+                            <svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M4 13h6V4H4v9Zm10 7h6v-9h-6v9ZM4 20h6v-4H4v4Zm10-11h6V4h-6v5Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+                            نمای کلی
+                        </button>
+                        <button type="button" class="panel-nav-item" data-tab="books">
+                            <svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M5 4h9a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3V4Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M17 7h2v13H8" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+                            کتاب‌های من
+                            <span class="nav-badge" id="books-badge">0</span>
+                        </button>
+                        <button type="button" class="panel-nav-item" data-tab="settings">
+                            <svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" stroke="currentColor" stroke-width="1.8"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1 1.55V21a2 2 0 1 1-4 0v-.09a1.7 1.7 0 0 0-1.11-1.55 1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-1.55-1H3a2 2 0 1 1 0-4h.09A1.7 1.7 0 0 0 4.6 8.9a1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.7 1.7 0 0 0 1.87.34H9a1.7 1.7 0 0 0 1-1.55V3a2 2 0 1 1 4 0v.09a1.7 1.7 0 0 0 1 1.55 1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.7 1.7 0 0 0-.34 1.87V9a1.7 1.7 0 0 0 1.55 1H21a2 2 0 1 1 0 4h-.09a1.7 1.7 0 0 0-1.51 1Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
+                            تنظیمات حساب
+                        </button>
+                    </nav>
+
+                    <a class="panel-cta" href="{{ url_for('serve_static_file', filename='upload.html') }}">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>
+                        کتاب جدید
+                    </a>
+
+                    <button type="button" class="panel-logout" id="logout-btn">خروج از حساب</button>
+                </aside>
+
+                <!-- ---------- MAIN CONTENT ---------- -->
+                <section class="panel-main">
+
+                    <!-- نمای کلی -->
+                    <div class="panel-tab active" id="tab-overview">
+                        <div class="stat-grid">
+                            <div class="stat-card">
+                                <span class="stat-label">کتاب‌های من</span>
+                                <strong class="stat-value" id="stat-total">۰</strong>
+                            </div>
+                            <div class="stat-card">
+                                <span class="stat-label">امانت رایگان</span>
+                                <strong class="stat-value" id="stat-free">۰</strong>
+                            </div>
+                            <div class="stat-card">
+                                <span class="stat-label">امانت با ودیعه</span>
+                                <strong class="stat-value" id="stat-deposit">۰</strong>
+                            </div>
+                            <div class="stat-card">
+                                <span class="stat-label">برای فروش</span>
+                                <strong class="stat-value" id="stat-sale">۰</strong>
+                            </div>
+                        </div>
+
+                        <div class="panel-card">
+                            <div class="panel-card-head">
+                                <h2>آخرین کتاب‌ها</h2>
+                                <button type="button" class="text-btn" data-goto="books">همه‌ی کتاب‌ها ←</button>
+                            </div>
+                            <div class="mini-list" id="recent-books">
+                                <p class="panel-empty">در حال بارگذاری…</p>
+                            </div>
+                        </div>
+
+                        <div class="panel-card quick-card">
+                            <div class="panel-card-head"><h2>دسترسی سریع</h2></div>
+                            <div class="quick-links">
+                                <a href="{{ url_for('serve_static_file', filename='upload.html') }}" class="quick-link">بارگذاری کتاب تازه</a>
+                                <a href="{{ url_for('serve_static_file', filename='books.html') }}" class="quick-link">دیدن قفسه‌ی کتاب‌ها</a>
+                                <button type="button" class="quick-link" data-goto="settings">ویرایش اطلاعات حساب</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- کتاب‌های من -->
+                    <div class="panel-tab" id="tab-books">
+                        <div class="panel-card">
+                            <div class="panel-card-head">
+                                <h2>کتاب‌های من</h2>
+                                <span class="muted" id="books-meta">‌</span>
+                            </div>
+                            <div class="my-books-grid" id="my-books-grid"></div>
+                            <p class="panel-empty" id="my-books-empty" hidden>
+                                هنوز کتابی بارگذاری نکرده‌ای.
+                                <a href="{{ url_for('serve_static_file', filename='upload.html') }}">اولین کتابت را ثبت کن</a>
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- تنظیمات -->
+                    <div class="panel-tab" id="tab-settings">
+                        <div class="panel-card">
+                            <div class="panel-card-head"><h2>اطلاعات حساب</h2></div>
+                            <form class="settings-form" id="profile-form" novalidate>
+                                <div class="form-row-2">
+                                    <div class="field" id="field-profile-name">
+                                        <label for="profile-name">نام و نام خانوادگی</label>
+                                        <input type="text" id="profile-name" autocomplete="name" placeholder="مثلاً سارا احمدی">
+                                        <span class="error-msg">نام باید حداقل ۲ نویسه باشد.</span>
+                                    </div>
+                                    <div class="field" id="field-profile-phone">
+                                        <label for="profile-phone">شماره موبایل</label>
+                                        <input type="tel" id="profile-phone" inputmode="numeric" autocomplete="tel" placeholder="09xxxxxxxxx">
+                                        <span class="error-msg">شماره باید ۱۱ رقم و با ۰۹ شروع شود.</span>
+                                    </div>
+                                </div>
+
+                                <div class="field" id="field-profile-email">
+                                    <label for="profile-email">ایمیل</label>
+                                    <input type="email" id="profile-email" readonly>
+                                    <span class="hint">ایمیل حساب قابل تغییر نیست.</span>
+                                </div>
+
+                                <div class="form-actions">
+                                    <button type="submit" class="submit-btn">ذخیره‌ی تغییرات</button>
+                                    <span class="form-note" id="profile-note"></span>
+                                </div>
+                            </form>
+                        </div>
+
+                        <div class="panel-card">
+                            <div class="panel-card-head">
+                                <h2>تغییر رمز عبور</h2>
+                                <span class="muted">حداقل ۸ نویسه</span>
+                            </div>
+                            <form class="settings-form" id="password-form" novalidate>
+                                <div class="field" id="field-current-password">
+                                    <label for="current-password">رمز فعلی</label>
+                                    <input type="password" id="current-password" autocomplete="current-password" placeholder="رمز فعلی‌ات">
+                                    <span class="error-msg">رمز فعلی را وارد کن.</span>
+                                </div>
+
+                                <div class="form-row-2">
+                                    <div class="field" id="field-new-password">
+                                        <label for="new-password">رمز جدید</label>
+                                        <input type="password" id="new-password" autocomplete="new-password" placeholder="حداقل ۸ نویسه">
+                                        <span class="error-msg">رمز جدید باید حداقل ۸ نویسه باشد.</span>
+                                    </div>
+                                    <div class="field" id="field-confirm-password">
+                                        <label for="confirm-password">تکرار رمز جدید</label>
+                                        <input type="password" id="confirm-password" autocomplete="new-password" placeholder="رمز جدید را دوباره بنویس">
+                                        <span class="error-msg">تکرار رمز مطابقت ندارد.</span>
+                                    </div>
+                                </div>
+
+                                <div class="form-actions">
+                                    <button type="submit" class="submit-btn">تغییر رمز عبور</button>
+                                    <span class="form-note" id="password-note"></span>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                </section>
+            </div>
+        </div>
+    </main>
+
+    <!-- اعلان کوتاه -->
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+    <footer class="panel-footer">
+        <div class="wrap">
+            <span>© کتاب‌به‌کتاب. همه‌ی حقوق محفوظ است.</span>
+            <a href="{{ url_for('serve_static_file', filename='books.html') }}">بازگشت به فهرست کتاب‌ها ←</a>
+        </div>
+    </footer>
+
+    <script src="{{ url_for('static', filename='js/panel.js') }}" defer></script>
+
+</body>
+</html>

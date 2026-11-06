@@ -80,19 +80,15 @@
             handleCoverFile(event.dataTransfer.files[0]);
         });
 
-        /* اگر کاربر واردشده، دکمه‌ی «ورود» بالای صفحه رو به اسم خودش تغییر بده */
-        fetch('/api/me').then(r => r.json()).then(me => {
-            if (me.loggedIn) {
-                const loginBtn = document.querySelector('.nav-actions .btn-login');
-                if (loginBtn) loginBtn.textContent = me.name;
-            }
-        });
-
-        /* ---------- بررسی ورود کاربر؛ بدون ورود اجازه‌ی آپلود نیست ---------- */
+        /* ---------- بررسی ورود کاربر؛ بدون ورود اجازه‌ی آپلود نیست ----------
+           یک درخواست کافی است: هم نام کاربر در نوار بالا ست می‌شود، هم گارد ورود. */
         fetch('/api/me').then(r => r.json()).then(me => {
             if (!me.loggedIn) {
                 window.location.href = 'login.html';
+                return;
             }
+            const loginBtn = document.querySelector('.nav-actions .btn-login');
+            if (loginBtn) { loginBtn.textContent = me.name; loginBtn.href = '/panel.html'; }
         });
 
         /* ---------- اعتبارسنجی و ارسالِ واقعیِ فرم به بک‌اند ---------- */

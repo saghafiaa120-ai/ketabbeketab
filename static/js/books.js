@@ -55,7 +55,7 @@
         fetch('/api/me').then(r => r.json()).then(me => {
             if (me.loggedIn) {
                 const loginBtn = document.querySelector('.nav-actions .btn-login');
-                if (loginBtn) loginBtn.textContent = me.name;
+                if (loginBtn) { loginBtn.textContent = me.name; loginBtn.href = '/panel.html'; }
             }
         });
 
@@ -140,14 +140,30 @@
                 coverPh.appendChild(img);
             }
 
+            /* اطلاعات کتاب از کاربر می‌آید؛ با textContent ساخته می‌شود تا HTML داخل
+               عنوان/نویسنده/آدرس اجرا نشود (جلوگیری از XSS ذخیره‌شده). */
             const info = document.createElement('div');
             info.className = 'book-info';
-            info.innerHTML = `
-                <h4>${book.title}</h4>
-                <p class="author">${book.author}</p>
-                <p class="loc">📍 ${book.address || ''}</p>
-                <span class="details-link">جزئیات ←</span>
-            `;
+
+            const titleEl = document.createElement('h4');
+            titleEl.textContent = book.title;
+
+            const authorEl = document.createElement('p');
+            authorEl.className = 'author';
+            authorEl.textContent = book.author;
+
+            const locEl = document.createElement('p');
+            locEl.className = 'loc';
+            locEl.textContent = '📍 ' + (book.address || '');
+
+            const detailsEl = document.createElement('span');
+            detailsEl.className = 'details-link';
+            detailsEl.textContent = 'جزئیات ←';
+
+            info.appendChild(titleEl);
+            info.appendChild(authorEl);
+            info.appendChild(locEl);
+            info.appendChild(detailsEl);
 
             card.appendChild(coverPh);
             card.appendChild(info);
@@ -157,7 +173,7 @@
 
         async function loadServerBooks() {
             try {
-                const res = await fetch('/api/books');
+                const res = await fetch('/api/books?per_page=100');
                 if (!res.ok) return;
                 const books = await res.json();
 

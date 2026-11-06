@@ -3,14 +3,19 @@
         fetch('/api/me').then(r => r.json()).then(me => {
             if (me.loggedIn) {
                 const loginBtn = document.querySelector('.nav-actions .btn-login');
-                if (loginBtn) loginBtn.textContent = me.name;
+                if (loginBtn) { loginBtn.textContent = me.name; loginBtn.href = '/panel.html'; }
 
-                if (me.id === __OWNER_ID__) {
-                    const delBtn = document.getElementById('owner-delete-btn');
+                /* شناسه‌ها از data-attribute خوانده می‌شوند؛ چون این فایل استاتیک است
+                   و پلیس‌هولدرهای قالب داخل HTML جایگزین می‌شوند، نه داخل JS. */
+                const delBtn = document.getElementById('owner-delete-btn');
+                const ownerId = delBtn ? Number(delBtn.dataset.ownerId) : NaN;
+                const bookId = delBtn ? delBtn.dataset.bookId : '';
+
+                if (delBtn && Number.isInteger(ownerId) && ownerId > 0 && ownerId === Number(me.id)) {
                     delBtn.style.display = 'block';
                     delBtn.addEventListener('click', async () => {
                         if (!confirm('مطمئنی می‌خوای این کتاب رو حذف کنی؟')) return;
-                        const res = await fetch('/api/books/__BOOK_ID__', { method: 'DELETE' });
+                        const res = await fetch(`/api/books/${bookId}`, { method: 'DELETE' });
                         const data = await res.json();
                         if (!res.ok) {
                             alert(data.error || 'حذف انجام نشد.');
@@ -55,9 +60,11 @@
         const requestBtn = document.getElementById('request-btn');
         const requestSuccess = document.getElementById('request-success');
 
-        requestBtn.addEventListener('click', () => {
-            requestBtn.disabled = true;
-            requestBtn.textContent = 'درخواست ارسال شد ✓';
-            requestBtn.classList.add('sent');
-            requestSuccess.classList.add('visible');
-        });
+        if (requestBtn && requestSuccess) {
+            requestBtn.addEventListener('click', () => {
+                requestBtn.disabled = true;
+                requestBtn.textContent = 'درخواست ارسال شد ✓';
+                requestBtn.classList.add('sent');
+                requestSuccess.classList.add('visible');
+            });
+        }

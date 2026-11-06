@@ -2,7 +2,7 @@
         fetch('/api/me').then(r => r.json()).then(me => {
             if (me.loggedIn) {
                 const loginBtn = document.querySelector('.nav-actions .btn-login');
-                if (loginBtn) loginBtn.textContent = me.name;
+                if (loginBtn) { loginBtn.textContent = me.name; loginBtn.href = '/panel.html'; }
             }
         });
 
@@ -152,6 +152,7 @@
                     return;
                 }
 
+                /* حساب ساخته شد و کاربر وارد است؛ مستقیم به پنل کاربری می‌رود. */
                 submitBtn.disabled = false;
                 submitBtn.textContent = 'ساخت حساب کاربری';
                 stepDetails.classList.add('step-hidden');
@@ -159,7 +160,12 @@
                 registerSwitchText.style.display = 'none';
 
                 const loginBtn = document.querySelector('.nav-actions .btn-login');
-                if (loginBtn && data.name) loginBtn.textContent = data.name;
+                if (loginBtn && data.name) {
+                    loginBtn.textContent = data.name;
+                    loginBtn.href = '/panel.html';
+                }
+
+                setTimeout(() => location.replace('panel.html'), 900);
             } catch (err) {
                 alert('اتصال به سرور برقرار نشد. مطمئن شو Flask در حال اجراست.');
                 submitBtn.disabled = false;

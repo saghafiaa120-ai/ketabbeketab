@@ -2,7 +2,7 @@
         fetch('/api/me').then(r => r.json()).then(me => {
             if (me.loggedIn) {
                 const loginBtn = document.querySelector('.nav-actions .btn-login');
-                if (loginBtn) loginBtn.textContent = me.name;
+                if (loginBtn) { loginBtn.textContent = me.name; loginBtn.href = '/panel.html'; }
             }
         });
 

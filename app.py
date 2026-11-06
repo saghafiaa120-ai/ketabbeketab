@@ -14,6 +14,7 @@
 """
 
 import os
+import re
 import uuid
 import secrets
 import time
@@ -22,7 +23,7 @@ from threading import Lock
 from html import escape
 from contextlib import contextmanager
 from decimal import Decimal, InvalidOperation
-from flask import Flask, request, jsonify, session, send_from_directory, render_template
+from flask import Flask, request, jsonify, session, send_from_directory, render_template, abort, Response
 from werkzeug.security import generate_password_hash, check_password_hash
 import mysql.connector
 from mysql.connector import pooling
@@ -48,7 +49,10 @@ STATIC_DIR = os.path.join(BASE_DIR, "static")
 TEMPLATES_DIR = os.path.join(BASE_DIR, "templates")
 COVERS_DIR = os.path.join(BASE_DIR, "covers")
 BOOKS_DIR = os.path.join(BASE_DIR, "books")
-GENERATED_BOOKS_DIR = os.path.join(BASE_DIR, "templates", "books")
+SAMPLE_BOOKS_DIR = os.path.join(TEMPLATES_DIR, "books")
+# صفحه‌های تولیدشده هیچ‌وقت با Jinja رندر نمی‌شوند (محتوای کاربر داخلشان است)؛
+# برای همین بیرون از پوشه‌ی templates و در یک پوشه‌ی مستقل ذخیره می‌شوند.
+GENERATED_BOOKS_DIR = os.path.join(BASE_DIR, "pages")
 TEMPLATE_PATH = os.path.join(TEMPLATES_DIR, "_template.html")
 os.makedirs(COVERS_DIR, exist_ok=True)
 os.makedirs(BOOKS_DIR, exist_ok=True)
@@ -56,6 +60,25 @@ os.makedirs(GENERATED_BOOKS_DIR, exist_ok=True)
 
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "webp", "gif"}
 SHARE_TYPES = {"free", "deposit", "sale"}
+
+# فهرست سفید صفحه‌های HTML؛ مسیر catch-all فقط همین‌ها را سرو می‌کند تا
+# فایل‌هایی مثل app.py، schema.sql یا .env از بیرون قابل دانلود نباشند.
+PAGE_TEMPLATES = {
+    "index.html",
+    "books.html",
+    "upload.html",
+    "login.html",
+    "register.html",
+    "process.html",
+    "community.html",
+    "about.html",
+    "contact.html",
+    "rules.html",
+    "panel.html",
+}
+SAMPLE_BOOK_PAGE_RE = re.compile(r"^book\d+\.html$")
+GENERATED_BOOK_PAGE_RE = re.compile(r"^book_\d+\.html$")
+AMOUNT_MAX = 1_000_000_000
 RATE_LIMIT_STORE = defaultdict(deque)
 RATE_LIMIT_LOCK = Lock()
 
@@ -116,8 +139,11 @@ def get_db():
 
 @contextmanager
 def db_cursor(dictionary=False):
+    """کرسر بافر‌شده؛ نتایج بلافاصله خوانده می‌شوند تا بستن کرسر خطای
+    «Unread result found» ندهد (این خطا باعث می‌شد /api/health همیشه ۵۰۳ بدهد).
+    """
     db = get_db()
-    cur = db.cursor(dictionary=dictionary)
+    cur = db.cursor(dictionary=dictionary, buffered=True)
     try:
         yield db, cur
     except Exception:
@@ -136,6 +162,10 @@ def rate_limited(bucket, limit, window_seconds=300):
     """محدودکننده‌ی سبک برای جلوگیری از سوءاستفاده از endpointهای حساس."""
     now = time.monotonic()
     with RATE_LIMIT_LOCK:
+        # جلوگیری از رشد بی‌نهایت دیکشنری وقتی درخواست‌ها از IPهای زیادی می‌آیند.
+        if len(RATE_LIMIT_STORE) > 2048:
+            for key in [k for k, v in RATE_LIMIT_STORE.items() if not v or now - v[-1] > 3600]:
+                RATE_LIMIT_STORE.pop(key, None)
         events = RATE_LIMIT_STORE[bucket]
         while events and now - events[0] > window_seconds:
             events.popleft()
@@ -154,7 +184,7 @@ def parse_amount(value, label):
         return None
     try:
         number = Decimal(str(value))
-        if number < 0 or number != number.to_integral_value():
+        if number < 0 or number > AMOUNT_MAX or number != number.to_integral_value():
             raise InvalidOperation
         return int(number)
     except (InvalidOperation, ValueError):
@@ -284,12 +314,37 @@ def serve_cover(filename):
     return send_from_directory(COVERS_DIR, filename)
 
 
+@app.route("/books/<path:filename>")
+def serve_book_page(filename):
+    """صفحه‌های کتاب: نمونه‌ها با Jinja، صفحه‌های ساخته‌شده به‌صورت فایل خام.
+
+    صفحه‌های تولیدشده از روی قالب، عنوان/نویسنده/توضیح کاربر را داخل خود دارند؛
+    اگر با render_template سرو شوند، Jinja دستورهای داخل محتوای کاربر را هم
+    اجرا می‌کند (SSTI). پس فقط با send_from_directory فرستاده می‌شوند.
+    """
+    base = os.path.basename(filename)
+    if base != filename:
+        abort(404)
+    if SAMPLE_BOOK_PAGE_RE.match(base):
+        return render_template(f"books/{base}")
+    if GENERATED_BOOK_PAGE_RE.match(base):
+        path = os.path.join(GENERATED_BOOKS_DIR, base)
+        if not os.path.isfile(path):
+            abort(404)
+        # فایل در حافظه خوانده می‌شود تا هندل باز نماند و در ویندوز حذف فایل
+        # بلافاصله بعد از دیده‌شدن صفحه شکست نخورد.
+        with open(path, "r", encoding="utf-8") as handle:
+            html = handle.read()
+        return Response(html, mimetype="text/html")
+    abort(404)
+
+
 @app.route("/<path:filename>")
 def serve_static_file(filename):
-    template_path = os.path.join(TEMPLATES_DIR, filename)
-    if os.path.isfile(template_path) and filename.lower().endswith(".html"):
-        return render_template(filename.replace("\\", "/"))
-    return send_from_directory(BASE_DIR, filename)
+    """فقط صفحه‌های شناخته‌شده‌ی سایت؛ بقیه‌ی فایل‌های پروژه عمومی نیستند."""
+    if filename in PAGE_TEMPLATES:
+        return render_template(filename)
+    abort(404)
 
 
 # ---------- احراز هویت ----------
@@ -367,7 +422,106 @@ def logout():
 def me():
     if not current_user_id():
         return jsonify(loggedIn=False)
-    return jsonify(loggedIn=True, id=session["user_id"], name=session["user_name"])
+
+    email = phone = None
+    try:
+        with db_cursor(dictionary=True) as (_db, cur):
+            cur.execute("SELECT name, email, phone FROM users WHERE id=%s", (current_user_id(),))
+            user = cur.fetchone()
+    except MySQLError:
+        app.logger.exception("Loading current user failed")
+        user = None
+
+    name = user["name"] if user else session.get("user_name")
+    if user:
+        email = user["email"]
+        phone = user["phone"]
+
+    return jsonify(
+        loggedIn=True,
+        id=session["user_id"],
+        name=name,
+        email=email,
+        phone=phone,
+        isAdmin=bool(session.get("is_admin")),
+    )
+
+
+@app.route("/api/profile", methods=["POST"])
+def update_profile():
+    """ویرایش نام و شماره موبایل از پنل کاربری."""
+    if not current_user_id():
+        return jsonify(error="ابتدا وارد حساب کاربری‌ات شو."), 401
+    if rate_limited(request_bucket("profile", str(current_user_id())), 20, 3600):
+        return json_error("تعداد ویرایش‌ها زیاد است؛ کمی بعد دوباره تلاش کن.", 429)
+
+    data = request.get_json(silent=True) or {}
+    name = (data.get("name") or "").strip()
+    phone = (data.get("phone") or "").strip()
+
+    if not 2 <= len(name) <= 255:
+        return json_error("نام باید بین ۲ تا ۲۵۵ نویسه باشد.")
+    if phone and not re.fullmatch(r"09\d{9}", phone):
+        return json_error("شماره موبایل باید با ۰۹ شروع شود و ۱۱ رقم باشد.")
+
+    try:
+        with db_cursor() as (db, cur):
+            cur.execute(
+                "UPDATE users SET name=%s, phone=%s WHERE id=%s",
+                (name, phone or None, current_user_id()),
+            )
+            db.commit()
+    except MySQLError:
+        app.logger.exception("Profile update failed")
+        return json_error("ذخیره‌ی اطلاعات انجام نشد. دوباره تلاش کنید.", 503)
+
+    session["user_name"] = name
+    return jsonify(success=True, name=name, phone=phone)
+
+
+@app.route("/api/password", methods=["POST"])
+def change_password():
+    """تغییر رمز عبور از پنل کاربری؛ رمز فعلی باید تأیید شود."""
+    if not current_user_id():
+        return jsonify(error="ابتدا وارد حساب کاربری‌ات شو."), 401
+    if rate_limited(request_bucket("password", str(current_user_id())), 5, 900):
+        return json_error("تعداد تلاش برای تغییر رمز زیاد است؛ ۱۵ دقیقه بعد دوباره امتحان کن.", 429)
+
+    data = request.get_json(silent=True) or {}
+    current_password = data.get("currentPassword") or ""
+    new_password = data.get("newPassword") or ""
+
+    if len(new_password) < 8:
+        return json_error("رمز جدید باید حداقل ۸ نویسه باشد.")
+    if new_password == current_password:
+        return json_error("رمز جدید باید با رمز فعلی فرق کند.")
+
+    user_id = current_user_id()
+    user_name = session.get("user_name")
+    is_admin = bool(session.get("is_admin"))
+
+    try:
+        with db_cursor(dictionary=True) as (db, cur):
+            cur.execute("SELECT password_hash FROM users WHERE id=%s", (user_id,))
+            user = cur.fetchone()
+            if not user or not check_password_hash(user["password_hash"], current_password):
+                return json_error("رمز فعلی درست نیست.", 403)
+
+            cur.execute(
+                "UPDATE users SET password_hash=%s WHERE id=%s",
+                (generate_password_hash(new_password), user_id),
+            )
+            db.commit()
+    except MySQLError:
+        app.logger.exception("Password change failed")
+        return json_error("تغییر رمز انجام نشد. دوباره تلاش کنید.", 503)
+
+    # نشست را با همان کاربر دوباره می‌سازیم تا نشانه‌های قبلی پاک شوند.
+    session.clear()
+    session["user_id"] = user_id
+    session["user_name"] = user_name
+    session["is_admin"] = is_admin
+    return jsonify(success=True)
 
 
 # ---------- کتاب‌ها ----------
@@ -464,25 +618,26 @@ def add_book():
         cover_filename = f"{uuid.uuid4().hex}.{ext}"
         file.save(os.path.join(COVERS_DIR, cover_filename))
 
+    db = get_db()
     try:
-        db = get_db()
         cur = db.cursor()
-        cur.execute(
-            """INSERT INTO books
-               (user_id, title, author, genre, book_condition, share_type,
-                duration, deposit_amount, sale_price, address, description, cover)
-               VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)""",
-            (
-                current_user_id(), title, author, genre, condition, share_type,
-                duration or None, deposit_amount or None, sale_price or None,
-                address, description, cover_filename,
-            ),
-        )
-        db.commit()
-        book_id = cur.lastrowid
-        cur.close()
-        db.close()
-    except MySQLError as e:
+        try:
+            cur.execute(
+                """INSERT INTO books
+                   (user_id, title, author, genre, book_condition, share_type,
+                    duration, deposit_amount, sale_price, address, description, cover)
+                   VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)""",
+                (
+                    current_user_id(), title, author, genre, condition, share_type,
+                    duration or None, deposit_amount or None, sale_price or None,
+                    address, description, cover_filename,
+                ),
+            )
+            db.commit()
+            book_id = cur.lastrowid
+        finally:
+            cur.close()
+    except MySQLError:
         if cover_filename:
             try:
                 os.remove(os.path.join(COVERS_DIR, cover_filename))
@@ -490,6 +645,9 @@ def add_book():
                 pass
         app.logger.exception("Book creation failed")
         return json_error("ثبت کتاب انجام نشد.", 503)
+    finally:
+        # اتصال در هر مسیری (موفق یا خطا) به استخر برگردانده می‌شود.
+        db.close()
 
     book_row = {
         "id": book_id,
@@ -531,31 +689,32 @@ def delete_book(book_id):
     if not current_user_id():
         return jsonify(error="ابتدا وارد حساب کاربری‌ات شو."), 401
 
+    db = get_db()
     try:
-        db = get_db()
         cur = db.cursor(dictionary=True)
-        cur.execute("SELECT * FROM books WHERE id=%s", (book_id,))
-        book = cur.fetchone()
+        try:
+            cur.execute("SELECT * FROM books WHERE id=%s", (book_id,))
+            book = cur.fetchone()
 
-        if not book:
+            if not book:
+                return jsonify(error="کتاب پیدا نشد."), 404
+
+            is_owner = book["user_id"] == current_user_id()
+            is_admin = bool(session.get("is_admin"))  # فعلاً همیشه False؛ برای آینده آماده است
+
+            if not is_owner and not is_admin:
+                return jsonify(error="اجازه‌ی حذف این کتاب را نداری."), 403
+
+            cur.execute("DELETE FROM books WHERE id=%s", (book_id,))
+            db.commit()
+        finally:
             cur.close()
-            db.close()
-            return jsonify(error="کتاب پیدا نشد."), 404
-
-        is_owner = book["user_id"] == current_user_id()
-        is_admin = bool(session.get("is_admin"))  # فعلاً همیشه False؛ برای آینده آماده است
-
-        if not is_owner and not is_admin:
-            cur.close()
-            db.close()
-            return jsonify(error="اجازه‌ی حذف این کتاب را نداری."), 403
-
-        cur.execute("DELETE FROM books WHERE id=%s", (book_id,))
-        db.commit()
-        cur.close()
+    except MySQLError:
+        # جزئیات خطای دیتابیس فقط در لاگ می‌ماند و به کاربر نشان داده نمی‌شود.
+        app.logger.exception("Book deletion failed")
+        return json_error("حذف کتاب انجام نشد. دوباره تلاش کنید.", 503)
+    finally:
         db.close()
-    except MySQLError as e:
-        return jsonify(error=f"خطای دیتابیس: {e}"), 500
 
     if book.get("cover"):
         try:

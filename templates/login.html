@@ -72,21 +72,6 @@
                 <div class="auth-container reveal">
                     <div class="auth-card">
 
-                        <!-- حالت ورود موفق: پنل شخصیِ کاربر (کتاب‌های خودش را می‌بیند و می‌تواند حذف کند) -->
-                        <div class="auth-success" id="login-success">
-                            <div class="icon">
-                                <svg width="26" height="26" viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                            </div>
-                            <h2 id="dashboard-greeting">خوش آمدی!</h2>
-                            <p>این پنل توئه؛ کتاب‌هایی که بارگذاری کرده‌ای اینجان.</p>
-
-                            <div id="my-books-list" style="text-align:right; margin:20px 0;"></div>
-                            <p id="my-books-empty" style="display:none; color:var(--ink-soft);">هنوز کتابی بارگذاری نکرده‌ای.</p>
-
-                            <a href="{{ url_for('serve_static_file', filename='upload.html') }}" class="submit-btn" style="text-decoration:none; display:inline-block; margin-bottom:10px;">بارگذاری کتاب جدید</a>
-                            <button type="button" class="back-link" id="logout-btn">خروج از حساب</button>
-                        </div>
-
                         <div id="login-step-email">
                             <h2>ورود به حساب کاربری</h2>
                             <p class="step-desc">ایمیل و رمز عبورت را وارد کن.</p>

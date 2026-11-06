@@ -13,10 +13,10 @@
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="icon" href="{{ url_for('static', filename='images/logo.png') }}">
+    <link rel="icon" href="/static/images/logo.png">
     <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/_template.css') }}">
+    <link rel="stylesheet" href="/static/css/_template.css">
 </head>
 
 <body>
@@ -27,26 +27,26 @@
     <header class="site-header">
         <div class="nav">
             <!-- Logo -->
-            <a href="{{ url_for('serve_static_file', filename='index.html') }}">
+            <a href="/index.html">
                 <div class="brand">
-                    <img src="{{ url_for('static', filename='images/logo.png') }}" alt="لوگوی کتاب‌به‌کتاب" style="width: 70px;">
+                    <img src="/static/images/logo.png" alt="لوگوی کتاب‌به‌کتاب" style="width: 70px;">
                     کتاب‌به‌کتاب
                 </div>
             </a>
 
             <!-- Navigation -->
             <nav class="nav-links" id="primary-navigation">
-                <a href="{{ url_for('serve_static_file', filename='books.html') }}">کتاب‌ها</a>
-                <a href="{{ url_for('serve_static_file', filename='process.html') }}">روند کار</a>
-                <a href="{{ url_for('serve_static_file', filename='community.html') }}">باشگاه خوانندگان</a>
-                <a href="{{ url_for('serve_static_file', filename='about.html') }}">درباره‌ی ما</a>
-                <a href="{{ url_for('serve_static_file', filename='contact.html') }}">ارتباط با ما</a>
+                <a href="/books.html">کتاب‌ها</a>
+                <a href="/process.html">روند کار</a>
+                <a href="/community.html">باشگاه خوانندگان</a>
+                <a href="/about.html">درباره‌ی ما</a>
+                <a href="/contact.html">ارتباط با ما</a>
             </nav>
 
             <!-- Actions -->
             <div class="nav-actions">
-                <a href="{{ url_for('serve_static_file', filename='login.html') }}" class="btn-login">ورود</a>
-                <a href="{{ url_for('serve_static_file', filename='upload.html') }}" class="nav-cta">
+                <a href="/login.html" class="btn-login">ورود</a>
+                <a href="/upload.html" class="nav-cta">
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
                         <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" />
                     </svg>
@@ -69,7 +69,7 @@
         <!-- کاورِ بزرگِ کتاب که بالای صفحه را می‌پوشاند -->
         <section class="book-hero reveal">
             <img src="__COVER_SRC__" alt="__TITLE__" onerror="this.style.display='none'">
-            <a href="{{ url_for('serve_static_file', filename='books.html') }}" class="book-hero-back">← بازگشت به فهرست کتاب‌ها</a>
+            <a href="/books.html" class="book-hero-back">← بازگشت به فهرست کتاب‌ها</a>
             <span class="badge __BADGE_CLASS__">__BADGE_LABEL__</span>
             <div class="book-hero-content">
                 <h1>__TITLE__</h1>
@@ -107,14 +107,14 @@
                             <span>درخواستت برای «__TITLE__» برای __OWNER_NAME__ ارسال شد. به‌محض تأیید، از طریق بخش گفت‌وگو بهت اطلاع داده می‌شود.</span>
                         </div>
 
-                        <button type="button" class="request-btn" id="owner-delete-btn" style="display:none; background:var(--pomegranate); margin-top:10px;">حذف این کتاب</button>
+                        <button type="button" class="request-btn" id="owner-delete-btn" data-book-id="__BOOK_ID__" data-owner-id="__OWNER_ID__" style="display:none; background:var(--pomegranate); margin-top:10px;">حذف این کتاب</button>
                     </div>
 
                 </div>
 
                 <!-- بازگشت به فهرست -->
                 <div class="book-nav">
-                    <a href="{{ url_for('serve_static_file', filename='books.html') }}">← بازگشت به فهرست کتاب‌ها</a>
+                    <a href="/books.html">← بازگشت به فهرست کتاب‌ها</a>
                     <span class="placeholder">.</span>
                 </div>
 
@@ -131,7 +131,7 @@
                 <!-- Brand -->
                 <div class="footer-brand">
                     <div class="brand">
-                        <img src="{{ url_for('static', filename='images/logo.png') }}" alt="لوگوی کتاب‌به‌کتاب" style="width: 60px;">
+                        <img src="/static/images/logo.png" alt="لوگوی کتاب‌به‌کتاب" style="width: 60px;">
                         کتاب‌به‌کتاب
                     </div>
                 </div>
@@ -140,9 +140,9 @@
                 <div>
                     <h5>دسترسی سریع</h5>
                     <ul>
-                        <li><a href="{{ url_for('serve_static_file', filename='books.html') }}">کتاب‌ها</a></li>
-                        <li><a href="{{ url_for('serve_static_file', filename='categories.html') }}">دسته‌بندی‌ها</a></li>
-                        <li><a href="{{ url_for('serve_static_file', filename='process.html') }}">راهنمای امانت</a></li>
+                        <li><a href="/books.html">کتاب‌ها</a></li>
+                        <li><a href="/books.html">دسته‌بندی‌ها</a></li>
+                        <li><a href="/process.html">راهنمای امانت</a></li>
                     </ul>
                 </div>
 
@@ -150,8 +150,8 @@
                 <div>
                     <h5>پشتیبانی</h5>
                     <ul>
-                        <li><a href="{{ url_for('serve_static_file', filename='faq.html') }}">سوالات متداول</a></li>
-                        <li><a href="{{ url_for('serve_static_file', filename='rules.html') }}">قوانین امانت</a></li>
+                        <li><a href="/process.html#faq">سوالات متداول</a></li>
+                        <li><a href="/rules.html">قوانین امانت</a></li>
                     </ul>
                 </div>
             </div>
@@ -166,7 +166,7 @@
     <!-- =====================================================
          JAVASCRIPT
     ===================================================== -->
-    <script src="{{ url_for('static', filename='js/_template.js') }}" defer></script>
+    <script src="/static/js/_template.js" defer></script>
 
 </body>
 </html>
