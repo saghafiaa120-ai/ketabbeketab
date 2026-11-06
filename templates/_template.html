@@ -101,11 +101,12 @@
                         </div>
                         __REQUEST_ROWS__
 
-                        <button type="button" class="request-btn" id="request-btn">__REQUEST_BTN_LABEL__</button>
+                        <button type="button" class="request-btn" id="request-btn" data-book-id="__BOOK_ID__">__REQUEST_BTN_LABEL__</button>
                         <div class="request-success" id="request-success">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                            <span>درخواستت برای «__TITLE__» برای __OWNER_NAME__ ارسال شد. به‌محض تأیید، از طریق بخش گفت‌وگو بهت اطلاع داده می‌شود.</span>
+                            <span>درخواستت برای «__TITLE__» ثبت شد و در پنل __OWNER_NAME__ نمایش داده می‌شود. پاسخ را از بخش «درخواست‌ها» در پنل کاربری ببین.</span>
                         </div>
+                        <p class="request-note" id="request-note" role="status" aria-live="polite"></p>
 
                         <button type="button" class="request-btn" id="owner-delete-btn" data-book-id="__BOOK_ID__" data-owner-id="__OWNER_ID__" style="display:none; background:var(--pomegranate); margin-top:10px;">حذف این کتاب</button>
                     </div>

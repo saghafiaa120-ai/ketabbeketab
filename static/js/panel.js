@@ -64,7 +64,7 @@
     });
 
     const initialTab = (location.hash || '').replace('#', '');
-    if (['overview', 'books', 'settings'].includes(initialTab)) {
+    if (['overview', 'books', 'requests', 'settings'].includes(initialTab)) {
         showTab(initialTab);
     }
 
@@ -286,6 +286,195 @@
         renderRecent(books);
     }
 
+    /* ---------- درخواست‌های امانت / خرید ---------- */
+    const requestStatusLabels = {
+        pending: 'در انتظار پاسخ',
+        accepted: 'تأیید شد',
+        rejected: 'رد شد',
+        cancelled: 'لغو شد',
+    };
+
+    function faDate(value) {
+        if (!value) return '';
+        const date = new Date(value);
+        if (Number.isNaN(date.getTime())) return '';
+        try {
+            return new Intl.DateTimeFormat('fa-IR', { day: 'numeric', month: 'short' }).format(date);
+        } catch (error) {
+            return '';
+        }
+    }
+
+    function requestMeta(req) {
+        const parts = [req.shareTypeLabel || req.shareType];
+        if (req.amount) parts.push(toFa(req.amount.toLocaleString('en-US')) + ' تومان');
+        return parts.join(' • ');
+    }
+
+    async function changeRequestStatus(req, status, button) {
+        const labels = { accepted: 'تأیید', rejected: 'رد', cancelled: 'لغو' };
+        button.disabled = true;
+        button.textContent = 'در حال ثبت…';
+
+        const result = await api(`/api/requests/${req.id}/status`, {
+            method: 'POST',
+            body: JSON.stringify({ status: status }),
+        });
+
+        if (!result.ok) {
+            button.disabled = false;
+            button.textContent = labels[status];
+            toast(result.data.error || 'تغییر وضعیت انجام نشد.', true);
+            return;
+        }
+
+        toast(status === 'accepted' ? 'درخواست تأیید شد.' : (status === 'rejected' ? 'درخواست رد شد.' : 'درخواست لغو شد.'));
+        await loadRequests();
+        await loadBooks();
+    }
+
+    function requestRow(req, box) {
+        const row = document.createElement('article');
+        row.className = 'request-row';
+
+        const info = document.createElement('div');
+        info.className = 'request-main';
+
+        const head = document.createElement('div');
+        head.className = 'request-head';
+
+        const title = document.createElement('a');
+        title.className = 'request-title';
+        title.href = req.bookDetailUrl;
+        title.textContent = req.bookTitle || 'کتاب';
+
+        const chip = document.createElement('span');
+        chip.className = 'status-chip ' + req.status;
+        chip.textContent = requestStatusLabels[req.status] || req.status;
+
+        head.append(title, chip);
+
+        const who = document.createElement('p');
+        who.className = 'request-sub';
+        who.textContent = box === 'incoming'
+            ? `درخواست‌دهنده: ${req.requesterName || 'کاربر'} · ${faDate(req.createdAt)}`
+            : `صاحب کتاب: ${req.ownerName || 'کاربر'} · ${faDate(req.createdAt)}`;
+
+        const meta = document.createElement('p');
+        meta.className = 'request-sub request-meta';
+        meta.textContent = requestMeta(req);
+
+        info.append(head, who, meta);
+
+        if (req.message) {
+            const msg = document.createElement('p');
+            msg.className = 'request-message';
+            msg.textContent = '«' + req.message + '»';
+            info.appendChild(msg);
+        }
+
+        row.appendChild(info);
+
+        if (req.canRespond || req.canCancel) {
+            const actions = document.createElement('div');
+            actions.className = 'request-actions';
+
+            if (req.canRespond) {
+                const accept = document.createElement('button');
+                accept.type = 'button';
+                accept.className = 'req-btn accept';
+                accept.textContent = 'تأیید';
+                accept.addEventListener('click', () => changeRequestStatus(req, 'accepted', accept));
+
+                const reject = document.createElement('button');
+                reject.type = 'button';
+                reject.className = 'req-btn reject';
+                reject.textContent = 'رد';
+                reject.addEventListener('click', () => changeRequestStatus(req, 'rejected', reject));
+
+                actions.append(accept, reject);
+            }
+
+            if (req.canCancel) {
+                const cancel = document.createElement('button');
+                cancel.type = 'button';
+                cancel.className = 'req-btn ghost';
+                cancel.textContent = 'لغو درخواست';
+                cancel.addEventListener('click', () => changeRequestStatus(req, 'cancelled', cancel));
+                actions.appendChild(cancel);
+            }
+
+            row.appendChild(actions);
+        }
+
+        return row;
+    }
+
+    function renderRequestList(container, items, box, emptyText) {
+        container.textContent = '';
+        if (!items.length) {
+            const empty = document.createElement('p');
+            empty.className = 'panel-empty';
+            empty.textContent = emptyText;
+            container.appendChild(empty);
+            return;
+        }
+        items.forEach((req) => container.appendChild(requestRow(req, box)));
+    }
+
+    function renderRequestBadges(pendingIncoming) {
+        const badge = el('requests-badge');
+        if (badge) {
+            badge.textContent = toFa(pendingIncoming);
+            badge.style.display = pendingIncoming ? 'inline-block' : 'none';
+        }
+
+        const notice = el('requests-notice');
+        const noticeText = el('requests-notice-text');
+        if (notice && noticeText) {
+            notice.hidden = pendingIncoming === 0;
+            noticeText.textContent = pendingIncoming
+                ? `${toFa(pendingIncoming)} درخواست جدید برای کتاب‌هایت داری`
+                : '';
+        }
+    }
+
+    async function loadRequests() {
+        const incomingList = el('incoming-list');
+        const outgoingList = el('outgoing-list');
+        const result = await api('/api/requests');
+
+        if (result.status === 401) {
+            location.replace('login.html');
+            return;
+        }
+        if (!result.ok) {
+            toast(result.data.error || 'دریافت درخواست‌ها انجام نشد.', true);
+            return;
+        }
+
+        const incoming = result.data.incoming || [];
+        const outgoing = result.data.outgoing || [];
+        const pendingIncoming = result.data.pendingIncoming || 0;
+
+        renderRequestList(incomingList, incoming, 'incoming', 'هنوز درخواستی برای کتاب‌هایت ثبت نشده است.');
+        renderRequestList(outgoingList, outgoing, 'outgoing', 'هنوز درخواستی برای کتابی نفرستاده‌ای.');
+
+        const incomingMeta = el('incoming-meta');
+        if (incomingMeta) {
+            incomingMeta.textContent = pendingIncoming
+                ? `${toFa(pendingIncoming)} در انتظار پاسخ`
+                : (incoming.length ? 'همه بررسی شده‌اند' : '‌');
+        }
+
+        const outgoingMeta = el('outgoing-meta');
+        if (outgoingMeta) {
+            outgoingMeta.textContent = outgoing.length ? `${toFa(outgoing.length)} درخواست` : '‌';
+        }
+
+        renderRequestBadges(pendingIncoming);
+    }
+
     /* ---------- تنظیمات: اطلاعات حساب ---------- */
     const profileForm = el('profile-form');
     const profileNote = el('profile-note');
@@ -402,5 +591,6 @@
         }
         fillUser(me.data);
         await loadBooks();
+        await loadRequests();
     })();
 })();

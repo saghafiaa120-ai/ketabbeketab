@@ -39,3 +39,21 @@ CREATE TABLE IF NOT EXISTS books (
     INDEX idx_books_genre (genre),
     INDEX idx_books_share_type (share_type)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ---------- درخواست‌های امانت / خرید ----------
+CREATE TABLE IF NOT EXISTS book_requests (
+    id            INT AUTO_INCREMENT PRIMARY KEY,
+    book_id       INT NOT NULL,
+    requester_id  INT NOT NULL,
+    owner_id      INT NOT NULL,
+    share_type    VARCHAR(20) NOT NULL DEFAULT 'free',   -- free | deposit | sale
+    amount        INT NULL,                              -- ودیعه یا قیمت در لحظه‌ی درخواست
+    message       VARCHAR(500) NULL,
+    status        VARCHAR(20) NOT NULL DEFAULT 'pending', -- pending | accepted | rejected | cancelled
+    created_at    TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (book_id) REFERENCES books(id) ON DELETE CASCADE,
+    FOREIGN KEY (requester_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (owner_id) REFERENCES users(id) ON DELETE CASCADE,
+    INDEX idx_requests_owner_status (owner_id, status),
+    INDEX idx_requests_requester (requester_id, status)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

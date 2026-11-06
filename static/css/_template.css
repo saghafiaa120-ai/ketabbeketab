@@ -484,7 +484,7 @@
             box-shadow: none;
         }
 
-        /* پیام موفقیت؛ چون این پلتفرم بک‌اند ندارد، فقط یک وضعیت بصری است */
+        /* پیام موفقیت پس از ثبت واقعی درخواست */
         .request-success {
             display: none;
             align-items: flex-start;
@@ -507,6 +507,19 @@
             flex: none;
             color: var(--teal-700);
             margin-top: 2px;
+        }
+
+        /* پیام خطا/راهنمای زیر دکمه‌ی درخواست */
+        .request-note {
+            min-height: 0;
+            margin-top: 10px;
+            font-size: 13px;
+            line-height: 1.8;
+            color: var(--ink-soft);
+        }
+
+        .request-note.error {
+            color: var(--pomegranate);
         }
 
         /* ---------- Book Navigation (کتاب قبلی / بعدی) ---------- */

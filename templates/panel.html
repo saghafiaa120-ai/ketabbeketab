@@ -89,6 +89,11 @@
                             کتاب‌های من
                             <span class="nav-badge" id="books-badge">0</span>
                         </button>
+                        <button type="button" class="panel-nav-item" data-tab="requests">
+                            <svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M20 12a8 8 0 1 1-3.2-6.4L20 4v5h-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M8 11h8M8 15h5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+                            درخواست‌ها
+                            <span class="nav-badge" id="requests-badge">۰</span>
+                        </button>
                         <button type="button" class="panel-nav-item" data-tab="settings">
                             <svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" stroke="currentColor" stroke-width="1.8"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1 1.55V21a2 2 0 1 1-4 0v-.09a1.7 1.7 0 0 0-1.11-1.55 1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-1.55-1H3a2 2 0 1 1 0-4h.09A1.7 1.7 0 0 0 4.6 8.9a1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.7 1.7 0 0 0 1.87.34H9a1.7 1.7 0 0 0 1-1.55V3a2 2 0 1 1 4 0v.09a1.7 1.7 0 0 0 1 1.55 1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.7 1.7 0 0 0-.34 1.87V9a1.7 1.7 0 0 0 1.55 1H21a2 2 0 1 1 0 4h-.09a1.7 1.7 0 0 0-1.51 1Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
                             تنظیمات حساب
@@ -108,6 +113,12 @@
 
                     <!-- نمای کلی -->
                     <div class="panel-tab active" id="tab-overview">
+                        <button type="button" class="notice-bar" id="requests-notice" data-goto="requests" hidden>
+                            <span class="notice-dot" aria-hidden="true"></span>
+                            <span id="requests-notice-text">درخواست جدید داری</span>
+                            <span class="notice-arrow">مشاهده ←</span>
+                        </button>
+
                         <div class="stat-grid">
                             <div class="stat-card">
                                 <span class="stat-label">کتاب‌های من</span>
@@ -159,6 +170,29 @@
                                 هنوز کتابی بارگذاری نکرده‌ای.
                                 <a href="{{ url_for('serve_static_file', filename='upload.html') }}">اولین کتابت را ثبت کن</a>
                             </p>
+                        </div>
+                    </div>
+
+                    <!-- درخواست‌ها -->
+                    <div class="panel-tab" id="tab-requests">
+                        <div class="panel-card">
+                            <div class="panel-card-head">
+                                <h2>درخواست‌های دریافتی</h2>
+                                <span class="muted" id="incoming-meta">‌</span>
+                            </div>
+                            <div class="request-list" id="incoming-list">
+                                <p class="panel-empty">در حال بارگذاری…</p>
+                            </div>
+                        </div>
+
+                        <div class="panel-card">
+                            <div class="panel-card-head">
+                                <h2>درخواست‌های ارسالی من</h2>
+                                <span class="muted" id="outgoing-meta">‌</span>
+                            </div>
+                            <div class="request-list" id="outgoing-list">
+                                <p class="panel-empty">در حال بارگذاری…</p>
+                            </div>
                         </div>
                     </div>
 

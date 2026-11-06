@@ -441,6 +441,180 @@
         color: #F7F1E1;
     }
 
+    /* ---------- نوار اعلان درخواست ---------- */
+    .notice-bar {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        width: 100%;
+        padding: 13px 18px;
+        border: 1px solid rgba(167, 59, 46, .35);
+        border-radius: 14px;
+        background: rgba(167, 59, 46, .09);
+        color: var(--pomegranate);
+        font-family: inherit;
+        font-size: 14px;
+        font-weight: 700;
+        cursor: pointer;
+        text-align: right;
+        transition: background .18s ease, transform .18s ease;
+    }
+
+    .notice-bar:hover {
+        background: rgba(167, 59, 46, .16);
+        transform: translateY(-1px);
+    }
+
+    .notice-bar[hidden] {
+        display: none;
+    }
+
+    .notice-dot {
+        width: 9px;
+        height: 9px;
+        border-radius: 50%;
+        background: var(--pomegranate);
+        box-shadow: 0 0 0 4px rgba(167, 59, 46, .18);
+        flex: none;
+    }
+
+    .notice-arrow {
+        margin-inline-start: auto;
+        font-size: 13px;
+    }
+
+    /* ---------- فهرست درخواست‌ها ---------- */
+    .request-list {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .request-row {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 14px;
+        border: 1px solid var(--line);
+        border-radius: 13px;
+        padding: 13px 15px;
+        background: rgba(255, 255, 255, .42);
+    }
+
+    .request-main {
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .request-head {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .request-title {
+        color: var(--teal-800);
+        font-weight: 800;
+        font-size: 15px;
+        text-decoration: none;
+        border-bottom: 1px dashed transparent;
+    }
+
+    .request-title:hover {
+        border-bottom-color: var(--teal-700);
+    }
+
+    .status-chip {
+        font-size: 11.5px;
+        font-weight: 700;
+        padding: 3px 10px;
+        border-radius: 999px;
+        background: rgba(27, 96, 98, .12);
+        color: var(--teal-800);
+    }
+
+    .status-chip.pending {
+        background: rgba(201, 152, 47, .2);
+        color: #7a5b0d;
+    }
+
+    .status-chip.accepted {
+        background: rgba(47, 122, 79, .16);
+        color: #2F7A4F;
+    }
+
+    .status-chip.rejected,
+    .status-chip.cancelled {
+        background: rgba(167, 59, 46, .12);
+        color: var(--pomegranate);
+    }
+
+    .request-sub {
+        font-size: 12.5px;
+        color: var(--ink-soft);
+    }
+
+    .request-message {
+        font-size: 13px;
+        color: var(--ink);
+        line-height: 1.9;
+        overflow-wrap: anywhere;
+    }
+
+    .request-actions {
+        display: flex;
+        gap: 7px;
+        flex: none;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+    }
+
+    .req-btn {
+        border: 1px solid var(--line);
+        border-radius: 9px;
+        padding: 7px 14px;
+        font-family: inherit;
+        font-size: 12.5px;
+        font-weight: 700;
+        cursor: pointer;
+        background: transparent;
+        color: var(--teal-800);
+        transition: background .18s ease, color .18s ease, border-color .18s ease;
+    }
+
+    .req-btn.accept {
+        background: var(--teal-700);
+        border-color: var(--teal-700);
+        color: #F7F1E1;
+    }
+
+    .req-btn.accept:hover {
+        background: var(--teal-800);
+    }
+
+    .req-btn.reject {
+        color: var(--pomegranate);
+        border-color: rgba(167, 59, 46, .35);
+    }
+
+    .req-btn.reject:hover {
+        background: var(--pomegranate);
+        border-color: var(--pomegranate);
+        color: #fff;
+    }
+
+    .req-btn.ghost:hover {
+        background: rgba(27, 96, 98, .1);
+    }
+
+    .req-btn:disabled {
+        opacity: .6;
+        cursor: wait;
+    }
+
     /* ---------- شبکه‌ی کتاب‌های من ---------- */
     .my-books-grid {
         display: grid;
@@ -777,6 +951,15 @@
     @media (max-width: 620px) {
         .panel-page {
             padding: 22px 0 40px;
+        }
+
+        .request-row {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .request-actions {
+            justify-content: flex-start;
         }
 
         .panel-heading {

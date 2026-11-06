@@ -2,7 +2,16 @@
         fetch('/api/me').then(r => r.json()).then(me => {
             if (me.loggedIn) {
                 const loginBtn = document.querySelector('.nav-actions .btn-login');
-                if (loginBtn) { loginBtn.textContent = me.name; loginBtn.href = '/panel.html'; }
+                if (loginBtn) {
+                    loginBtn.textContent = me.name;
+                    loginBtn.href = '/panel.html';
+                    if (me.pendingRequests) {
+                        const badge = document.createElement('span');
+                        badge.textContent = String(me.pendingRequests).replace(/[0-9]/g, (d) => '۰۱۲۳۴۵۶۷۸۹'[Number(d)]);
+                        badge.style.cssText = 'display:inline-block;margin-inline-start:6px;min-width:18px;padding:0 5px;border-radius:999px;background:#A73B2E;color:#fff;font-size:11px;line-height:18px;text-align:center;';
+                        loginBtn.appendChild(badge);
+                    }
+                }
             }
         });
 

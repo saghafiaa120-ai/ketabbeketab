@@ -109,6 +109,35 @@ try:
 except MySQLError:
     DB_POOL = None
 
+BOOK_REQUESTS_TABLE_SQL = """
+CREATE TABLE IF NOT EXISTS book_requests (
+    id            INT AUTO_INCREMENT PRIMARY KEY,
+    book_id       INT NOT NULL,
+    requester_id  INT NOT NULL,
+    owner_id      INT NOT NULL,
+    share_type    VARCHAR(20) NOT NULL DEFAULT 'free',
+    amount        INT NULL,
+    message       VARCHAR(500) NULL,
+    status        VARCHAR(20) NOT NULL DEFAULT 'pending',
+    created_at    TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (book_id) REFERENCES books(id) ON DELETE CASCADE,
+    FOREIGN KEY (requester_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (owner_id) REFERENCES users(id) ON DELETE CASCADE,
+    INDEX idx_requests_owner_status (owner_id, status),
+    INDEX idx_requests_requester (requester_id, status)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+"""
+
+
+def ensure_schema():
+    """جدول درخواست‌ها را در نصب‌های قدیمی هم می‌سازد (اجرای دوباره‌ی schema.sql لازم نیست)."""
+    try:
+        with db_cursor() as (db, cur):
+            cur.execute(BOOK_REQUESTS_TABLE_SQL)
+            db.commit()
+    except MySQLError:
+        app.logger.warning("Could not ensure book_requests table", exc_info=True)
+
 
 @app.errorhandler(413)
 def request_too_large(_error):
@@ -437,6 +466,18 @@ def me():
         email = user["email"]
         phone = user["phone"]
 
+    pending_requests = 0
+    try:
+        with db_cursor() as (_db, cur):
+            cur.execute(
+                "SELECT COUNT(*) FROM book_requests WHERE owner_id=%s AND status='pending'",
+                (session["user_id"],),
+            )
+            row = cur.fetchone()
+            pending_requests = int(row[0]) if row else 0
+    except MySQLError:
+        app.logger.warning("Pending request count failed", exc_info=True)
+
     return jsonify(
         loggedIn=True,
         id=session["user_id"],
@@ -444,6 +485,7 @@ def me():
         email=email,
         phone=phone,
         isAdmin=bool(session.get("is_admin")),
+        pendingRequests=pending_requests,
     )
 
 
@@ -725,6 +767,199 @@ def delete_book(book_id):
     delete_book_page(book_id)
 
     return jsonify(success=True)
+
+
+# ---------- درخواست‌های امانت / خرید ----------
+REQUEST_STATUSES = {"pending", "accepted", "rejected", "cancelled"}
+REQUEST_STATUS_LABELS = {
+    "pending": "در انتظار پاسخ",
+    "accepted": "تأیید شد",
+    "rejected": "رد شد",
+    "cancelled": "لغو شد",
+}
+
+
+def request_to_dict(row):
+    return {
+        "id": row["id"],
+        "bookId": row["book_id"],
+        "bookTitle": row["book_title"],
+        "bookDetailUrl": f"/books/book_{row['book_id']}.html",
+        "shareType": row["share_type"],
+        "shareTypeLabel": SHARE_TYPE_BADGE_LABELS.get(row["share_type"], row["share_type"]),
+        "amount": row["amount"],
+        "message": row["message"],
+        "status": row["status"],
+        "statusLabel": REQUEST_STATUS_LABELS.get(row["status"], row["status"]),
+        "requesterId": row["requester_id"],
+        "requesterName": row.get("requester_name"),
+        "ownerId": row["owner_id"],
+        "ownerName": row.get("owner_name"),
+        "createdAt": row["created_at"].isoformat() if row.get("created_at") else None,
+        "canRespond": row["owner_id"] == current_user_id() and row["status"] == "pending",
+        "canCancel": row["requester_id"] == current_user_id() and row["status"] == "pending",
+    }
+
+
+def load_requests(box):
+    """درخواست‌های دریافتی (box='incoming') یا ارسالی (box='outgoing') کاربر فعلی."""
+    if box == "incoming":
+        where, param = "r.owner_id=%s", current_user_id()
+    else:
+        where, param = "r.requester_id=%s", current_user_id()
+
+    with db_cursor(dictionary=True) as (_db, cur):
+        cur.execute(
+            f"""SELECT r.*, b.title AS book_title,
+                       requester.name AS requester_name,
+                       owner.name AS owner_name
+                FROM book_requests r
+                JOIN books b ON b.id = r.book_id
+                JOIN users requester ON requester.id = r.requester_id
+                JOIN users owner ON owner.id = r.owner_id
+                WHERE {where}
+                ORDER BY (r.status = 'pending') DESC, r.created_at DESC
+                LIMIT 100""",
+            (param,),
+        )
+        return cur.fetchall()
+
+
+@app.route("/api/requests", methods=["GET"])
+def list_requests():
+    if not current_user_id():
+        return jsonify(error="ابتدا وارد حساب کاربری‌ات شو."), 401
+
+    try:
+        incoming = load_requests("incoming")
+        outgoing = load_requests("outgoing")
+    except MySQLError:
+        app.logger.exception("Request listing failed")
+        return json_error("دریافت درخواست‌ها انجام نشد.", 503)
+
+    return jsonify(
+        incoming=[request_to_dict(row) for row in incoming],
+        outgoing=[request_to_dict(row) for row in outgoing],
+        pendingIncoming=sum(1 for row in incoming if row["status"] == "pending"),
+        pendingOutgoing=sum(1 for row in outgoing if row["status"] == "pending"),
+    )
+
+
+@app.route("/api/books/<int:book_id>/requests", methods=["POST"])
+def create_request(book_id):
+    if not current_user_id():
+        return jsonify(error="ابتدا وارد حساب کاربری‌ات شو."), 401
+    if rate_limited(request_bucket("request", str(current_user_id())), 20, 3600):
+        return json_error("تعداد درخواست‌هایت زیاد است؛ کمی بعد دوباره تلاش کن.", 429)
+
+    data = request.get_json(silent=True) or {}
+    message = (data.get("message") or "").strip()
+    if len(message) > 500:
+        return json_error("متن پیام حداکثر ۵۰۰ نویسه می‌تواند باشد.")
+
+    db = get_db()
+    try:
+        cur = db.cursor(dictionary=True, buffered=True)
+        try:
+            cur.execute(
+                "SELECT id, user_id, title, share_type, deposit_amount, sale_price FROM books WHERE id=%s",
+                (book_id,),
+            )
+            book = cur.fetchone()
+            if not book:
+                return jsonify(error="کتاب پیدا نشد."), 404
+            if book["user_id"] == current_user_id():
+                return json_error("این کتاب خودت است؛ نمی‌توانی برای آن درخواست بدهی.")
+
+            cur.execute(
+                "SELECT id FROM book_requests WHERE book_id=%s AND requester_id=%s AND status='pending'",
+                (book_id, current_user_id()),
+            )
+            if cur.fetchone():
+                return json_error("قبلاً برای این کتاب درخواست داده‌ای؛ منتظر پاسخ صاحب کتاب باش.", 409)
+
+            amount = book["deposit_amount"] if book["share_type"] == "deposit" else book["sale_price"]
+            cur.execute(
+                """INSERT INTO book_requests
+                   (book_id, requester_id, owner_id, share_type, amount, message, status)
+                   VALUES (%s, %s, %s, %s, %s, %s, 'pending')""",
+                (book_id, current_user_id(), book["user_id"], book["share_type"], amount, message or None),
+            )
+            db.commit()
+            request_id = cur.lastrowid
+        finally:
+            cur.close()
+    except MySQLError:
+        app.logger.exception("Request creation failed")
+        return json_error("ثبت درخواست انجام نشد. دوباره تلاش کنید.", 503)
+    finally:
+        db.close()
+
+    return jsonify(success=True, id=request_id, bookTitle=book["title"], status="pending")
+
+
+@app.route("/api/requests/<int:request_id>/status", methods=["POST"])
+def update_request_status(request_id):
+    if not current_user_id():
+        return jsonify(error="ابتدا وارد حساب کاربری‌ات شو."), 401
+
+    data = request.get_json(silent=True) or {}
+    new_status = (data.get("status") or "").strip()
+    if new_status not in REQUEST_STATUSES:
+        return json_error("وضعیت درخواست معتبر نیست.")
+
+    db = get_db()
+    try:
+        cur = db.cursor(dictionary=True, buffered=True)
+        try:
+            cur.execute(
+                "SELECT id, book_id, requester_id, owner_id, status FROM book_requests WHERE id=%s",
+                (request_id,),
+            )
+            row = cur.fetchone()
+            if not row:
+                return jsonify(error="درخواست پیدا نشد."), 404
+
+            # اول دسترسی، بعد وضعیت؛ تا کاربر بیگانه از حالت درخواست خبردار نشود.
+            is_owner = row["owner_id"] == current_user_id()
+            is_requester = row["requester_id"] == current_user_id()
+
+            if not is_owner and not is_requester:
+                return jsonify(error="به این درخواست دسترسی نداری."), 403
+            if new_status in {"accepted", "rejected"} and not is_owner:
+                return jsonify(error="فقط صاحب کتاب می‌تواند این درخواست را تأیید یا رد کند."), 403
+            if new_status == "cancelled" and not is_requester:
+                return jsonify(error="فقط فرستنده‌ی درخواست می‌تواند آن را لغو کند."), 403
+            if row["status"] != "pending":
+                return json_error("این درخواست قبلاً بررسی شده است.", 409)
+
+            cur.execute(
+                "UPDATE book_requests SET status=%s WHERE id=%s",
+                (new_status, request_id),
+            )
+
+            # با تأیید یک درخواست، بقیه‌ی درخواست‌های همان کتاب خودکار رد می‌شوند.
+            if new_status == "accepted":
+                cur.execute(
+                    """UPDATE book_requests SET status='rejected'
+                       WHERE book_id=%s AND status='pending' AND id<>%s""",
+                    (row["book_id"], request_id),
+                )
+
+            db.commit()
+        finally:
+            cur.close()
+    except MySQLError:
+        app.logger.exception("Request status update failed")
+        return json_error("تغییر وضعیت درخواست انجام نشد.", 503)
+    finally:
+        db.close()
+
+    return jsonify(success=True, id=request_id, status=new_status, statusLabel=REQUEST_STATUS_LABELS[new_status])
+
+
+# جدول درخواست‌ها در اولین اجرا (یا نصب‌های قدیمی) ساخته می‌شود.
+ensure_schema()
 
 
 if __name__ == "__main__":
