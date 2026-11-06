@@ -43,7 +43,14 @@
 - فهرست عمومی کتاب‌ها با جست‌وجو روی عنوان، نویسنده و ژانر
 - **ساخت خودکار صفحه‌ی اختصاصی هر کتاب** از روی قالب `templates/_template.html`
   (`pages/book_<id>.html`) و حذف خودکار آن هنگام حذف کتاب
-- کتاب‌های نمونه‌ی ثابت در کنار کتاب‌های واقعی نمایش داده می‌شوند
+- اگر فایل صفحه‌ی یک کتاب گم شود، در اولین بازدید از روی دیتابیس دوباره ساخته می‌شود
+- کتاب‌های نمونه‌ی ثابت (`book1..book10`) در کنار کتاب‌های واقعی نمایش داده می‌شوند
+
+### درخواست امانت / خرید
+- ثبت درخواست برای کتاب دیگران از صفحه‌ی کتاب، همراه با پیام اختیاری (حداکثر ۵۰۰ نویسه)
+- صاحب کتاب درخواست را تأیید یا رد می‌کند و درخواست‌دهنده می‌تواند آن را لغو کند
+- با تأیید یک درخواست، بقیه‌ی درخواست‌های در انتظارِ همان کتاب خودکار رد می‌شوند
+- درخواست‌های دریافتی و ارسالی در پنل کاربری دیده می‌شوند
 
 ### امنیت و پایداری
 - اعتبارسنجی سمت سرور برای همه‌ی ورودی‌ها (طول، نوع، مبلغ صحیح مثبت)
@@ -56,6 +63,7 @@
 - مدیریت اتصال دیتابیس با connection pool و `context manager`
 - پاک‌سازی فایل‌های نیمه‌کاره در صورت خطا (جلد و صفحه‌ی کتاب)
 - مسیر `GET /api/health` برای پایش وضعیت برنامه و دیتابیس
+- صفحه‌ی خطای فارسی (`404.html`) برای آدرس‌های ناموجود و خطای سرور؛ مسیرهای `/api/` پاسخ JSON می‌دهند
 
 ---
 
@@ -80,11 +88,13 @@ ketabBeketab/
 │   ├── community.html      # باشگاه خوانندگان
 │   ├── about.html          # درباره‌ی ما
 │   ├── contact.html        # ارتباط با ما
+│   ├── rules.html          # قوانین امانت
+│   ├── 404.html            # صفحه‌ی خطا (۴۰۴ و ۵۰۰)
 │   ├── _template.html      # قالب ساخت صفحه‌ی هر کتاب
-│   └── books/              # صفحه‌های کتاب‌های نمونه (book1..book7)
+│   └── books/              # صفحه‌های کتاب‌های نمونه (book1..book10)
 ├── pages/                  # صفحه‌های ساخته‌شده‌ی هر کتاب (book_<id>.html)
 ├── static/
-│   ├── css/                # استایل هر صفحه
+│   ├── css/                # استایل هر صفحه (برای هر کتاب نمونه هم یک فایل)
 │   ├── js/                 # منطق سمت کاربر
 │   ├── fonts/              # فونت محلی Vazirmatn
 │   └── images/             # لوگو و تصاویر
@@ -182,6 +192,11 @@ python app.py
 | `GET` | `/api/my-books` | کاربر | کتاب‌های خودِ کاربر |
 | `POST` | `/api/books` | کاربر | ثبت کتاب جدید (multipart + جلد) |
 | `DELETE` | `/api/books/<id>` | مالک / مدیر | حذف کتاب و صفحه و جلد آن |
+| `GET` | `/api/requests` | کاربر | درخواست‌های دریافتی و ارسالی کاربر |
+| `POST` | `/api/books/<id>/requests` | کاربر | ثبت درخواست امانت/خرید برای یک کتاب |
+| `POST` | `/api/requests/<id>/status` | مالک / درخواست‌دهنده | تأیید، رد (مالک) یا لغو (درخواست‌دهنده) |
+
+> جدول `book_requests` در نصب‌های قدیمی هنگام اجرای برنامه خودکار ساخته می‌شود؛ اجرای دوباره‌ی `schema.sql` لازم نیست.
 
 نمونه‌ی ثبت‌نام:
 
@@ -233,7 +248,7 @@ web: gunicorn --workers 2 --threads 4 --timeout 120 --bind 0.0.0.0:$PORT wsgi:ap
 
 ## 🗺️ نقشه‌ی راه
 
-- [ ] درخواست واقعی امانت/خرید و پیگیری وضعیت تحویل
+- [ ] پیگیری وضعیت تحویل و بازگشت کتاب پس از تأیید درخواست
 - [ ] گفت‌وگوی درون‌برنامه‌ای بین امانت‌دهنده و امانت‌گیرنده
 - [ ] بازیابی رمز عبور (بدون وابستگی به ایمیل، مثلاً با موبایل)
 - [ ] پنل مدیریت (فیلد `is_admin` از قبل در دیتابیس آماده است)
@@ -261,7 +276,7 @@ web: gunicorn --workers 2 --threads 4 --timeout 120 --bind 0.0.0.0:$PORT wsgi:ap
 **Ketab-be-Ketab** is a Persian (RTL) book-sharing platform built with **Flask + MySQL** and vanilla HTML/CSS/JS.
 Users sign up (account is active immediately) or log in with **email + password** — there is **no email
 verification and no SMTP dependency**. Users upload books with covers, choose free / deposit / sale lending,
-and the app generates a dedicated page per book. Includes search, per-user dashboard, rate limiting,
+and the app generates a dedicated page per book. Includes search, per-user dashboard, borrow/buy requests with owner approval, rate limiting,
 secure sessions and image validation.
 
 </div>

@@ -48,14 +48,12 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 STATIC_DIR = os.path.join(BASE_DIR, "static")
 TEMPLATES_DIR = os.path.join(BASE_DIR, "templates")
 COVERS_DIR = os.path.join(BASE_DIR, "covers")
-BOOKS_DIR = os.path.join(BASE_DIR, "books")
 SAMPLE_BOOKS_DIR = os.path.join(TEMPLATES_DIR, "books")
 # صفحه‌های تولیدشده هیچ‌وقت با Jinja رندر نمی‌شوند (محتوای کاربر داخلشان است)؛
 # برای همین بیرون از پوشه‌ی templates و در یک پوشه‌ی مستقل ذخیره می‌شوند.
 GENERATED_BOOKS_DIR = os.path.join(BASE_DIR, "pages")
 TEMPLATE_PATH = os.path.join(TEMPLATES_DIR, "_template.html")
 os.makedirs(COVERS_DIR, exist_ok=True)
-os.makedirs(BOOKS_DIR, exist_ok=True)
 os.makedirs(GENERATED_BOOKS_DIR, exist_ok=True)
 
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "webp", "gif"}
@@ -142,6 +140,24 @@ def ensure_schema():
 @app.errorhandler(413)
 def request_too_large(_error):
     return json_error("حجم فایل بیشتر از ۵ مگابایت است.", 413)
+
+
+def wants_json():
+    return request.path.startswith("/api/")
+
+
+@app.errorhandler(404)
+def not_found(_error):
+    if wants_json():
+        return json_error("مسیر موردنظر پیدا نشد.", 404)
+    return render_template("404.html"), 404
+
+
+@app.errorhandler(500)
+def server_error(_error):
+    if wants_json():
+        return json_error("خطای داخلی سرور. دوباره تلاش کنید.", 500)
+    return render_template("404.html", server_error=True), 500
 
 
 @app.errorhandler(MySQLError)
@@ -324,6 +340,28 @@ def generate_book_page(book, owner_name):
     return f"/books/book_{book['id']}.html"
 
 
+def rebuild_book_page(book_id):
+    """اگر فایل صفحه‌ی کتاب گم شده ولی کتاب در دیتابیس هست، صفحه را دوباره می‌سازد."""
+    try:
+        with db_cursor(dictionary=True) as (_db, cur):
+            cur.execute(
+                "SELECT books.*, users.name AS owner_name FROM books "
+                "JOIN users ON books.user_id = users.id WHERE books.id=%s",
+                (book_id,),
+            )
+            book = cur.fetchone()
+    except MySQLError:
+        app.logger.warning("Could not load book %s for page rebuild", book_id, exc_info=True)
+        return False
+    if not book:
+        return False
+    try:
+        return bool(generate_book_page(book, book.get("owner_name") or ""))
+    except OSError:
+        app.logger.exception("Book page rebuild failed")
+        return False
+
+
 def delete_book_page(book_id):
     path = os.path.join(GENERATED_BOOKS_DIR, f"book_{book_id}.html")
     try:
@@ -355,11 +393,15 @@ def serve_book_page(filename):
     if base != filename:
         abort(404)
     if SAMPLE_BOOK_PAGE_RE.match(base):
+        if not os.path.isfile(os.path.join(SAMPLE_BOOKS_DIR, base)):
+            abort(404)
         return render_template(f"books/{base}")
     if GENERATED_BOOK_PAGE_RE.match(base):
         path = os.path.join(GENERATED_BOOKS_DIR, base)
         if not os.path.isfile(path):
-            abort(404)
+            book_id = int(base[len("book_"):-len(".html")])
+            if not rebuild_book_page(book_id):
+                abort(404)
         # فایل در حافظه خوانده می‌شود تا هندل باز نماند و در ویندوز حذف فایل
         # بلافاصله بعد از دیده‌شدن صفحه شکست نخورد.
         with open(path, "r", encoding="utf-8") as handle:

@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% if server_error %}خطای سرور{% else %}صفحه پیدا نشد{% endif %} | کتاب‌به‌کتاب</title>
+    <link rel="icon" href="{{ url_for('static', filename='images/logo.png') }}">
+    <style>
+        @font-face { font-family: 'Vazirmatn'; src: url('/static/fonts/Vazirmatn-Black.ttf') format('truetype'); font-weight: 100 900; font-display: swap; }
+        :root { --paper: #F3E9D2; --ink: #1C2B2B; --ink-soft: #4B5B5A; --teal-900: #0C3839; --teal-700: #1B6062; --gold: #C9982F; --pomegranate: #A73B2E; }
+        * { box-sizing: border-box; }
+        body { margin: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px; background: var(--paper); color: var(--ink); font-family: 'Vazirmatn', Tahoma, sans-serif; text-align: center; }
+        .box { max-width: 460px; }
+        .box img { width: 90px; margin-bottom: 8px; }
+        .code { font-size: 84px; font-weight: 900; color: var(--pomegranate); line-height: 1; margin: 0; }
+        h1 { font-size: 24px; color: var(--teal-900); margin: 12px 0 8px; }
+        p { color: var(--ink-soft); line-height: 1.9; margin: 0 0 24px; }
+        .actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+        a { display: inline-block; padding: 11px 22px; border-radius: 999px; text-decoration: none; font-weight: 700; font-size: 15px; }
+        .primary { background: var(--teal-900); color: #fff; }
+        .secondary { border: 1.5px solid var(--teal-700); color: var(--teal-700); }
+    </style>
+</head>
+
+<body>
+    <main class="box">
+        <img src="{{ url_for('static', filename='images/logo.png') }}" alt="لوگوی کتاب‌به‌کتاب">
+        <p class="code">{{ 500 if server_error else 404 }}</p>
+        {% if server_error %}
+        <h1>مشکلی در سرور پیش آمد</h1>
+        <p>متأسفیم، این صفحه الان در دسترس نیست. چند لحظه بعد دوباره امتحان کن.</p>
+        {% else %}
+        <h1>این صفحه پیدا نشد</h1>
+        <p>ممکن است آدرس اشتباه باشد یا این کتاب حذف شده باشد.</p>
+        {% endif %}
+        <div class="actions">
+            <a class="primary" href="{{ url_for('serve_index') }}">صفحه‌ی اصلی</a>
+            <a class="secondary" href="{{ url_for('serve_static_file', filename='books.html') }}">فهرست کتاب‌ها</a>
+        </div>
+    </main>
+</body>
+
+</html>
