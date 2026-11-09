@@ -64,7 +64,7 @@
     });
 
     const initialTab = (location.hash || '').replace('#', '');
-    if (['overview', 'books', 'requests', 'settings'].includes(initialTab)) {
+    if (['overview', 'books', 'requests', 'loans', 'favorites', 'settings'].includes(initialTab)) {
         showTab(initialTab);
     }
 
@@ -128,9 +128,15 @@
 
         const navName = el('nav-user-name');
         if (navName) {
+            // نشانِ درخواست‌های در انتظار (که ویجت اعلان اضافه می‌کند) پاک نشود.
+            const badge = navName.querySelector('.nav-user-badge');
             navName.textContent = name;
+            if (badge) navName.appendChild(badge);
             navName.href = '/panel.html';
         }
+
+        const adminLink = el('admin-link');
+        if (adminLink) adminLink.hidden = !user.isAdmin;
 
         el('profile-name').value = name;
         el('profile-phone').value = user.phone || '';
@@ -290,8 +296,22 @@
     const requestStatusLabels = {
         pending: 'در انتظار پاسخ',
         accepted: 'تأیید شد',
+        coordinating: 'در حال هماهنگی',
+        delivered: 'تحویل‌شده',
+        on_loan: 'در حال امانت',
+        returned: 'بازگشت داده شد',
+        completed: 'خرید تکمیل شد',
         rejected: 'رد شد',
         cancelled: 'لغو شد',
+    };
+
+    const stepLabels = {
+        accepted: 'تأیید',
+        coordinating: 'هماهنگی',
+        delivered: 'تحویل',
+        on_loan: 'در حال امانت',
+        returned: 'بازگشت',
+        completed: 'تکمیل',
     };
 
     function faDate(value) {
@@ -305,14 +325,71 @@
         }
     }
 
+    function faFullDate(value) {
+        if (!value) return '';
+        const date = new Date(value);
+        if (Number.isNaN(date.getTime())) return '';
+        try {
+            return new Intl.DateTimeFormat('fa-IR', {
+                day: 'numeric', month: 'long', year: 'numeric',
+            }).format(date);
+        } catch (error) {
+            return '';
+        }
+    }
+
     function requestMeta(req) {
         const parts = [req.shareTypeLabel || req.shareType];
         if (req.amount) parts.push(toFa(req.amount.toLocaleString('en-US')) + ' تومان');
         return parts.join(' • ');
     }
 
+    /* نوار پیشرفت امانت: تأیید ← هماهنگی ← تحویل ← در حال امانت ← بازگشت */
+    function timeline(req) {
+        if (!req.steps || !req.currentStep) return null;
+
+        const box = document.createElement('div');
+        box.className = 'loan-track';
+
+        req.steps.forEach((step, index) => {
+            const item = document.createElement('span');
+            item.className = 'loan-step';
+            if (index + 1 < req.currentStep) item.classList.add('done');
+            if (index + 1 === req.currentStep) item.classList.add('current');
+            item.textContent = stepLabels[step] || step;
+            box.appendChild(item);
+        });
+
+        return box;
+    }
+
+    function dueLine(req) {
+        if (!req.dueAt) return null;
+        const line = document.createElement('p');
+        line.className = 'loan-due';
+
+        const parts = ['موعد بازگشت: ' + faFullDate(req.dueAt)];
+        if (req.deliveredAt) parts.unshift('تحویل: ' + faFullDate(req.deliveredAt));
+
+        if (req.status === 'on_loan' && typeof req.daysLeft === 'number') {
+            if (req.daysLeft < 0) {
+                line.classList.add('overdue');
+                parts.push(toFa(Math.abs(req.daysLeft)) + ' روز تأخیر');
+            } else if (req.daysLeft === 0) {
+                line.classList.add('soon');
+                parts.push('امروز آخرین روز است');
+            } else if (req.daysLeft <= 3) {
+                line.classList.add('soon');
+                parts.push(toFa(req.daysLeft) + ' روز مانده');
+            }
+        }
+
+        line.textContent = parts.join(' · ');
+        return line;
+    }
+
     async function changeRequestStatus(req, status, button) {
-        const labels = { accepted: 'تأیید', rejected: 'رد', cancelled: 'لغو' };
+        const label = button.textContent;
         button.disabled = true;
         button.textContent = 'در حال ثبت…';
 
@@ -323,19 +400,20 @@
 
         if (!result.ok) {
             button.disabled = false;
-            button.textContent = labels[status];
+            button.textContent = label;
             toast(result.data.error || 'تغییر وضعیت انجام نشد.', true);
             return;
         }
 
-        toast(status === 'accepted' ? 'درخواست تأیید شد.' : (status === 'rejected' ? 'درخواست رد شد.' : 'درخواست لغو شد.'));
+        toast('وضعیت به «' + (result.data.statusLabel || requestStatusLabels[status] || status) + '» تغییر کرد.');
         await loadRequests();
-        await loadBooks();
+        await loadLoans();
     }
 
     function requestRow(req, box) {
         const row = document.createElement('article');
         row.className = 'request-row';
+        if (req.isOverdue) row.classList.add('is-overdue');
 
         const info = document.createElement('div');
         info.className = 'request-main';
@@ -356,15 +434,27 @@
 
         const who = document.createElement('p');
         who.className = 'request-sub';
-        who.textContent = box === 'incoming'
-            ? `درخواست‌دهنده: ${req.requesterName || 'کاربر'} · ${faDate(req.createdAt)}`
-            : `صاحب کتاب: ${req.ownerName || 'کاربر'} · ${faDate(req.createdAt)}`;
+        if (box === 'incoming') {
+            who.textContent = `درخواست‌دهنده: ${req.requesterName || 'کاربر'} · ${faDate(req.createdAt)}`;
+        } else if (box === 'loans') {
+            who.textContent = req.role === 'owner'
+                ? `امانت‌گیرنده: ${req.requesterName || 'کاربر'}`
+                : `صاحب کتاب: ${req.ownerName || 'کاربر'}`;
+        } else {
+            who.textContent = `صاحب کتاب: ${req.ownerName || 'کاربر'} · ${faDate(req.createdAt)}`;
+        }
 
         const meta = document.createElement('p');
         meta.className = 'request-sub request-meta';
         meta.textContent = requestMeta(req);
 
         info.append(head, who, meta);
+
+        const track = timeline(req);
+        if (track) info.appendChild(track);
+
+        const due = dueLine(req);
+        if (due) info.appendChild(due);
 
         if (req.message) {
             const msg = document.createElement('p');
@@ -375,36 +465,21 @@
 
         row.appendChild(info);
 
-        if (req.canRespond || req.canCancel) {
-            const actions = document.createElement('div');
-            actions.className = 'request-actions';
+        const actions = req.actions || [];
+        if (actions.length) {
+            const actionBox = document.createElement('div');
+            actionBox.className = 'request-actions';
 
-            if (req.canRespond) {
-                const accept = document.createElement('button');
-                accept.type = 'button';
-                accept.className = 'req-btn accept';
-                accept.textContent = 'تأیید';
-                accept.addEventListener('click', () => changeRequestStatus(req, 'accepted', accept));
+            actions.forEach((action) => {
+                const button = document.createElement('button');
+                button.type = 'button';
+                button.className = 'req-btn ' + (action.style || 'ghost');
+                button.textContent = action.label;
+                button.addEventListener('click', () => changeRequestStatus(req, action.status, button));
+                actionBox.appendChild(button);
+            });
 
-                const reject = document.createElement('button');
-                reject.type = 'button';
-                reject.className = 'req-btn reject';
-                reject.textContent = 'رد';
-                reject.addEventListener('click', () => changeRequestStatus(req, 'rejected', reject));
-
-                actions.append(accept, reject);
-            }
-
-            if (req.canCancel) {
-                const cancel = document.createElement('button');
-                cancel.type = 'button';
-                cancel.className = 'req-btn ghost';
-                cancel.textContent = 'لغو درخواست';
-                cancel.addEventListener('click', () => changeRequestStatus(req, 'cancelled', cancel));
-                actions.appendChild(cancel);
-            }
-
-            row.appendChild(actions);
+            row.appendChild(actionBox);
         }
 
         return row;
@@ -473,6 +548,202 @@
         }
 
         renderRequestBadges(pendingIncoming);
+    }
+
+    /* ---------- پیگیری امانت ---------- */
+    function renderLoanSummary(active, overdueCount, dueSoonCount) {
+        const box = el('loan-summary');
+        if (!box) return;
+
+        box.textContent = '';
+        if (!active.length) {
+            box.hidden = true;
+            return;
+        }
+
+        const cards = [
+            { label: 'امانت فعال', value: active.length, tone: 'teal' },
+            { label: 'نزدیک موعد', value: dueSoonCount, tone: 'gold' },
+            { label: 'تأخیر', value: overdueCount, tone: 'red' },
+        ];
+
+        cards.forEach((card) => {
+            const item = document.createElement('div');
+            item.className = 'loan-sum ' + card.tone;
+
+            const value = document.createElement('strong');
+            value.textContent = toFa(card.value);
+
+            const label = document.createElement('span');
+            label.textContent = card.label;
+
+            item.append(value, label);
+            box.appendChild(item);
+        });
+
+        box.hidden = false;
+    }
+
+    function renderLoanList(container, items, box, emptyText) {
+        container.textContent = '';
+        if (!items.length) {
+            const empty = document.createElement('p');
+            empty.className = 'panel-empty';
+            empty.textContent = emptyText;
+            container.appendChild(empty);
+            return;
+        }
+        items.forEach((req) => container.appendChild(requestRow(req, box)));
+    }
+
+    function renderDueNotice(active, overdueCount, dueSoonCount) {
+        const notice = el('due-notice');
+        const text = el('due-notice-text');
+        if (!notice || !text) return;
+
+        if (overdueCount) {
+            text.textContent = `${toFa(overdueCount)} امانت از موعد گذشته است`;
+            notice.hidden = false;
+        } else if (dueSoonCount) {
+            text.textContent = `${toFa(dueSoonCount)} امانت نزدیک موعد بازگشت است`;
+            notice.hidden = false;
+        } else {
+            notice.hidden = true;
+        }
+
+        const badge = el('loans-badge');
+        if (badge) {
+            badge.textContent = toFa(active.length);
+            badge.style.display = active.length ? 'inline-block' : 'none';
+        }
+    }
+
+    async function loadLoans() {
+        const activeList = el('loans-active-list');
+        const historyList = el('loans-history-list');
+        const result = await api('/api/loans');
+
+        if (result.status === 401) return;
+        if (!result.ok) {
+            toast(result.data.error || 'دریافت امانت‌ها انجام نشد.', true);
+            return;
+        }
+
+        const active = result.data.active || [];
+        const history = result.data.history || [];
+        const overdueCount = result.data.overdueCount || 0;
+        const dueSoonCount = result.data.dueSoonCount || 0;
+
+        renderLoanSummary(active, overdueCount, dueSoonCount);
+        renderLoanList(activeList, active, 'loans', 'الان امانت فعالی نداری.');
+        renderLoanList(historyList, history, 'loans', 'هنوز امانت یا خریدی کامل نشده است.');
+
+        const meta = el('loans-meta');
+        if (meta) {
+            meta.textContent = active.length ? `${toFa(active.length)} در جریان` : '‌';
+        }
+
+        const historyMeta = el('loans-history-meta');
+        if (historyMeta) {
+            historyMeta.textContent = history.length ? `${toFa(history.length)} مورد` : '‌';
+        }
+
+        renderDueNotice(active, overdueCount, dueSoonCount);
+    }
+
+    /* ---------- علاقه‌مندی‌ها ---------- */
+    function favoriteCard(book) {
+        const card = document.createElement('div');
+        card.className = 'my-book';
+
+        const cover = document.createElement('div');
+        cover.className = 'my-book-cover';
+        cover.textContent = (book.title || '?').trim().charAt(0);
+
+        if (book.cover) {
+            const img = document.createElement('img');
+            img.src = book.cover;
+            img.alt = 'جلد ' + book.title;
+            img.loading = 'lazy';
+            img.addEventListener('error', () => img.remove());
+            cover.appendChild(img);
+        }
+
+        const badge = document.createElement('span');
+        badge.className = 'my-book-badge';
+        badge.textContent = shareTypeLabels[book.shareType] || book.shareType;
+        cover.appendChild(badge);
+
+        const body = document.createElement('div');
+        body.className = 'my-book-body';
+
+        const title = document.createElement('h3');
+        title.textContent = book.title;
+
+        const author = document.createElement('p');
+        author.textContent = book.author;
+
+        const rating = document.createElement('p');
+        rating.className = 'fav-rating';
+        rating.textContent = book.ratingCount
+            ? '★ ' + toFa(book.ratingAvg) + ' از ۵ · ' + toFa(book.ratingCount) + ' نظر'
+            : 'بدون امتیاز';
+
+        const actions = document.createElement('div');
+        actions.className = 'my-book-actions';
+
+        const detail = document.createElement('a');
+        detail.href = book.detailUrl || '/books.html';
+        detail.textContent = 'مشاهده';
+        actions.appendChild(detail);
+
+        const remove = document.createElement('button');
+        remove.type = 'button';
+        remove.textContent = 'برداشتن';
+        remove.addEventListener('click', async () => {
+            remove.disabled = true;
+            const result = await api('/api/books/' + book.id + '/favorite', { method: 'POST' });
+            if (!result.ok) {
+                remove.disabled = false;
+                toast(result.data.error || 'انجام نشد.', true);
+                return;
+            }
+            toast('از علاقه‌مندی‌ها برداشته شد.');
+            loadFavorites();
+        });
+        actions.appendChild(remove);
+
+        body.append(title, author, rating, actions);
+        card.append(cover, body);
+        return card;
+    }
+
+    async function loadFavorites() {
+        const grid = el('favorites-grid');
+        const empty = el('favorites-empty');
+        const result = await api('/api/favorites');
+
+        if (result.status === 401) return;
+        if (!result.ok) {
+            toast(result.data.error || 'دریافت علاقه‌مندی‌ها انجام نشد.', true);
+            return;
+        }
+
+        const books = Array.isArray(result.data) ? result.data : [];
+        grid.textContent = '';
+        books.forEach((book) => grid.appendChild(favoriteCard(book)));
+        empty.hidden = books.length > 0;
+
+        const badge = el('favorites-badge');
+        if (badge) {
+            badge.textContent = toFa(books.length);
+            badge.style.display = books.length ? 'inline-block' : 'none';
+        }
+
+        const meta = el('favorites-meta');
+        if (meta) {
+            meta.textContent = books.length ? `${toFa(books.length)} کتاب` : '‌';
+        }
     }
 
     /* ---------- تنظیمات: اطلاعات حساب ---------- */
@@ -592,5 +863,7 @@
         fillUser(me.data);
         await loadBooks();
         await loadRequests();
+        await loadLoans();
+        await loadFavorites();
     })();
 })();

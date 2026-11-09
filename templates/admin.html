@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>پنل مدیریت | کتاب‌به‌کتاب</title>
+    <meta name="robots" content="noindex, nofollow">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="icon" href="{{ url_for('static', filename='images/logo.png') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/panel.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+</head>
+
+<body class="panel-body admin-body">
+
+    <!-- =====================================================
+         HEADER
+    ===================================================== -->
+    <header class="site-header">
+        <div class="nav">
+            <a href="{{ url_for('serve_static_file', filename='index.html') }}">
+                <div class="brand">
+                    <img src="{{ url_for('static', filename='images/logo.png') }}" alt="لوگوی کتاب‌به‌کتاب" style="width: 70px;">
+                    کتاب‌به‌کتاب
+                </div>
+            </a>
+
+            <nav class="nav-links" id="primary-navigation">
+                <a href="{{ url_for('serve_static_file', filename='books.html') }}">کتاب‌ها</a>
+                <a href="{{ url_for('serve_static_file', filename='panel.html') }}">پنل کاربری</a>
+                <a href="{{ url_for('serve_static_file', filename='admin.html') }}" class="is-current">پنل مدیریت</a>
+            </nav>
+
+            <div class="nav-actions">
+                <a href="{{ url_for('serve_static_file', filename='panel.html') }}" class="btn-login" id="nav-user-name">پنل کاربری</a>
+            </div>
+
+            <button class="menu-btn" type="button" aria-label="باز کردن منو" aria-controls="primary-navigation" aria-expanded="false">
+                ☰
+            </button>
+        </div>
+    </header>
+
+    <main class="panel-page">
+        <div class="wrap">
+
+            <div class="panel-heading reveal">
+                <div>
+                    <h1>پنل مدیریت</h1>
+                    <p>کاربران، کتاب‌ها، نظرات و درخواست‌های کل سایت از همین‌جا مدیریت می‌شوند.</p>
+                </div>
+                <span class="panel-chip" id="admin-date">‌</span>
+            </div>
+
+            <div class="panel-shell reveal">
+
+                <!-- ---------- SIDEBAR ---------- -->
+                <aside class="panel-side">
+                    <div class="user-card">
+                        <div class="avatar" id="admin-avatar">؟</div>
+                        <strong id="admin-name">در حال بارگذاری…</strong>
+                        <span id="admin-email">‌</span>
+                        <span class="admin-role">مدیر سایت</span>
+                    </div>
+
+                    <nav class="panel-nav" aria-label="بخش‌های پنل مدیریت">
+                        <button type="button" class="panel-nav-item active" data-tab="overview">
+                            <svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M4 13h6V4H4v9Zm10 7h6v-9h-6v9ZM4 20h6v-4H4v4Zm10-11h6V4h-6v5Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+                            نمای کلی
+                        </button>
+                        <button type="button" class="panel-nav-item" data-tab="users">
+                            <svg width="17" height="17" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="3.4" stroke="currentColor" stroke-width="1.8"/><path d="M5 20c0-3.3 3.1-5.4 7-5.4s7 2.1 7 5.4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+                            کاربران
+                            <span class="nav-badge" id="users-badge">۰</span>
+                        </button>
+                        <button type="button" class="panel-nav-item" data-tab="books">
+                            <svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M5 4h9a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3V4Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M17 7h2v13H8" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+                            کتاب‌ها
+                            <span class="nav-badge" id="books-badge">۰</span>
+                        </button>
+                        <button type="button" class="panel-nav-item" data-tab="reviews">
+                            <svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="m12 4 2.4 5 5.6.8-4 3.9 1 5.5-5-2.6-5 2.6 1-5.5-4-3.9 5.6-.8L12 4Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+                            نظرات
+                            <span class="nav-badge" id="reviews-badge">۰</span>
+                        </button>
+                        <button type="button" class="panel-nav-item" data-tab="requests">
+                            <svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M20 12a8 8 0 1 1-3.2-6.4L20 4v5h-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M8 11h8M8 15h5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+                            درخواست‌ها
+                            <span class="nav-badge" id="requests-badge">۰</span>
+                        </button>
+                    </nav>
+
+                    <a class="panel-cta" href="{{ url_for('serve_static_file', filename='panel.html') }}">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M15 6l-6 6 6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        پنل کاربری من
+                    </a>
+
+                    <button type="button" class="panel-logout" id="logout-btn">خروج از حساب</button>
+                </aside>
+
+                <!-- ---------- MAIN ---------- -->
+                <section class="panel-main">
+
+                    <!-- نمای کلی -->
+                    <div class="panel-tab active" id="tab-overview">
+                        <div class="stat-grid admin-stats">
+                            <div class="stat-card">
+                                <span class="stat-label">کاربران</span>
+                                <strong class="stat-value" id="stat-users">۰</strong>
+                                <span class="stat-note" id="stat-active">‌</span>
+                            </div>
+                            <div class="stat-card">
+                                <span class="stat-label">کتاب‌ها</span>
+                                <strong class="stat-value" id="stat-books">۰</strong>
+                            </div>
+                            <div class="stat-card">
+                                <span class="stat-label">درخواست‌ها</span>
+                                <strong class="stat-value" id="stat-requests">۰</strong>
+                                <span class="stat-note" id="stat-pending">‌</span>
+                            </div>
+                            <div class="stat-card">
+                                <span class="stat-label">در حال امانت</span>
+                                <strong class="stat-value" id="stat-loans">۰</strong>
+                            </div>
+                            <div class="stat-card">
+                                <span class="stat-label">نظرات</span>
+                                <strong class="stat-value" id="stat-reviews">۰</strong>
+                            </div>
+                            <div class="stat-card">
+                                <span class="stat-label">علاقه‌مندی‌ها</span>
+                                <strong class="stat-value" id="stat-favorites">۰</strong>
+                            </div>
+                        </div>
+
+                        <div class="admin-two-col">
+                            <div class="panel-card">
+                                <div class="panel-card-head">
+                                    <h2>آخرین ورودها</h2>
+                                    <button type="button" class="text-btn" data-goto="users">همه‌ی کاربران ←</button>
+                                </div>
+                                <div class="admin-list" id="recent-users">
+                                    <p class="panel-empty">در حال بارگذاری…</p>
+                                </div>
+                            </div>
+
+                            <div class="panel-card">
+                                <div class="panel-card-head">
+                                    <h2>آخرین نظرات</h2>
+                                    <button type="button" class="text-btn" data-goto="reviews">همه‌ی نظرات ←</button>
+                                </div>
+                                <div class="admin-list" id="recent-reviews">
+                                    <p class="panel-empty">در حال بارگذاری…</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="panel-card">
+                            <div class="panel-card-head">
+                                <h2>آخرین کتاب‌ها</h2>
+                                <button type="button" class="text-btn" data-goto="books">همه‌ی کتاب‌ها ←</button>
+                            </div>
+                            <div class="admin-list" id="recent-books">
+                                <p class="panel-empty">در حال بارگذاری…</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- کاربران -->
+                    <div class="panel-tab" id="tab-users">
+                        <div class="panel-card">
+                            <div class="panel-card-head">
+                                <h2>کاربران</h2>
+                                <span class="muted" id="users-meta">‌</span>
+                            </div>
+
+                            <div class="admin-toolbar">
+                                <input type="search" id="users-search" class="admin-input" placeholder="جست‌وجوی نام، ایمیل یا موبایل…">
+                            </div>
+
+                            <div class="admin-table-wrap">
+                                <table class="admin-table">
+                                    <thead>
+                                        <tr>
+                                            <th>کاربر</th>
+                                            <th>موبایل</th>
+                                            <th>آخرین ورود</th>
+                                            <th>کتاب / درخواست / نظر</th>
+                                            <th>دسترسی</th>
+                                            <th></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="users-body">
+                                        <tr><td colspan="6" class="admin-empty">در حال بارگذاری…</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- کتاب‌ها -->
+                    <div class="panel-tab" id="tab-books">
+                        <div class="panel-card">
+                            <div class="panel-card-head">
+                                <h2>کتاب‌ها</h2>
+                                <span class="muted" id="books-meta">‌</span>
+                            </div>
+
+                            <div class="admin-toolbar">
+                                <input type="search" id="books-search" class="admin-input" placeholder="جست‌وجوی عنوان، نویسنده یا صاحب کتاب…">
+                            </div>
+
+                            <div class="admin-table-wrap">
+                                <table class="admin-table">
+                                    <thead>
+                                        <tr>
+                                            <th>کتاب</th>
+                                            <th>صاحب</th>
+                                            <th>نوع</th>
+                                            <th>درخواست / نظر</th>
+                                            <th>تاریخ</th>
+                                            <th></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="books-body">
+                                        <tr><td colspan="6" class="admin-empty">در حال بارگذاری…</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- نظرات -->
+                    <div class="panel-tab" id="tab-reviews">
+                        <div class="panel-card">
+                            <div class="panel-card-head">
+                                <h2>نظرات کاربران</h2>
+                                <span class="muted" id="reviews-meta">‌</span>
+                            </div>
+
+                            <div class="admin-toolbar">
+                                <input type="search" id="reviews-search" class="admin-input" placeholder="جست‌وجو در متن نظر، کتاب یا نام کاربر…">
+                            </div>
+
+                            <div class="admin-list admin-list--roomy" id="reviews-list">
+                                <p class="panel-empty">در حال بارگذاری…</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- درخواست‌ها -->
+                    <div class="panel-tab" id="tab-requests">
+                        <div class="panel-card">
+                            <div class="panel-card-head">
+                                <h2>درخواست‌ها</h2>
+                                <span class="muted" id="requests-meta">‌</span>
+                            </div>
+
+                            <div class="admin-toolbar">
+                                <select id="requests-filter" class="admin-input admin-select">
+                                    <option value="">همه‌ی وضعیت‌ها</option>
+                                    <option value="pending">در انتظار پاسخ</option>
+                                    <option value="accepted">تأیید شد</option>
+                                    <option value="coordinating">در حال هماهنگی</option>
+                                    <option value="delivered">تحویل‌شده</option>
+                                    <option value="on_loan">در حال امانت</option>
+                                    <option value="returned">بازگشت داده شد</option>
+                                    <option value="completed">خرید تکمیل شد</option>
+                                    <option value="rejected">رد شد</option>
+                                    <option value="cancelled">لغو شد</option>
+                                </select>
+                            </div>
+
+                            <div class="admin-table-wrap">
+                                <table class="admin-table">
+                                    <thead>
+                                        <tr>
+                                            <th>کتاب</th>
+                                            <th>درخواست‌دهنده</th>
+                                            <th>صاحب</th>
+                                            <th>وضعیت</th>
+                                            <th>تاریخ</th>
+                                            <th></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="requests-body">
+                                        <tr><td colspan="6" class="admin-empty">در حال بارگذاری…</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                </section>
+            </div>
+        </div>
+    </main>
+
+    <!-- =====================================================
+         MODAL: ویرایش
+    ===================================================== -->
+    <div class="admin-modal" id="admin-modal" hidden>
+        <div class="admin-modal-card" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+            <div class="admin-modal-head">
+                <h2 id="modal-title">ویرایش</h2>
+                <button type="button" class="admin-modal-close" id="modal-close" aria-label="بستن">×</button>
+            </div>
+            <form id="modal-form" class="admin-form" novalidate></form>
+            <p class="admin-form-note" id="modal-note"></p>
+        </div>
+    </div>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+    <footer class="panel-footer">
+        <div class="wrap">
+            <span>© کتاب‌به‌کتاب — پنل مدیریت</span>
+            <a href="{{ url_for('serve_static_file', filename='panel.html') }}">بازگشت به پنل کاربری ←</a>
+        </div>
+    </footer>
+
+    <script src="{{ url_for('static', filename='js/notifications.js') }}" defer></script>
+    <script src="{{ url_for('static', filename='js/admin.js') }}" defer></script>
+
+</body>
+</html>

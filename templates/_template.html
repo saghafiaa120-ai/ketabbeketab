@@ -71,9 +71,24 @@
             <img src="__COVER_SRC__" alt="__TITLE__" onerror="this.style.display='none'">
             <a href="/books.html" class="book-hero-back">← بازگشت به فهرست کتاب‌ها</a>
             <span class="badge __BADGE_CLASS__">__BADGE_LABEL__</span>
+
+            <!-- قلب علاقه‌مندی روی جلد (خودِ دکمه به شکل قلب است) -->
+            <button type="button" class="hero-fav" id="hero-fav" data-book-id="__BOOK_ID__"
+                    aria-pressed="false" aria-label="ذخیره در علاقه‌مندی‌ها" title="ذخیره در علاقه‌مندی‌ها">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path class="heart-shape"
+                          d="M12 21.2c-.32 0-.63-.1-.9-.29C9.9 20 3.6 15.4 3.6 10.2 3.6 7.4 5.8 5.2 8.5 5.2c1.4 0 2.7.62 3.5 1.7.8-1.08 2.1-1.7 3.5-1.7 2.7 0 4.9 2.2 4.9 5 0 5.2-6.3 9.8-7.5 10.71-.27.19-.58.29-.9.29Z" />
+                </svg>
+            </button>
+
             <div class="book-hero-content">
                 <h1>__TITLE__</h1>
                 <p class="author">__AUTHOR__</p>
+                <div class="hero-meta">
+                    <span class="hero-chip">__GENRE__</span>
+                    <span class="hero-chip">__CONDITION__</span>
+                    <span class="hero-rating" id="hero-rating" hidden></span>
+                </div>
             </div>
         </section>
 
@@ -82,35 +97,91 @@
 
                 <div class="book-detail reveal">
 
-                    <!-- اطلاعات کتاب -->
-                    <div class="book-info-panel">
-                        <div class="info-chips">
-                            <span class="info-chip">ژانر: __GENRE__</span>
-                            <span class="info-chip">وضعیت: __CONDITION__</span>
-                            <span class="info-chip">📍 __ADDRESS__</span>
+                    <!-- ستون معرفی: مشخصات، توضیح و راهنمای امانت -->
+                    <div class="book-main">
+
+                        <div class="detail-card">
+                            <h2 class="block-title">مشخصات کتاب</h2>
+                            <dl class="spec-grid">
+                                <div class="spec">
+                                    <dt>ژانر</dt>
+                                    <dd>__GENRE__</dd>
+                                </div>
+                                <div class="spec">
+                                    <dt>وضعیت</dt>
+                                    <dd>__CONDITION__</dd>
+                                </div>
+                                <div class="spec">
+                                    <dt>نوع اشتراک</dt>
+                                    <dd>__BADGE_LABEL__</dd>
+                                </div>
+                                <div class="spec">
+                                    <dt>__FACT_LABEL__</dt>
+                                    <dd>__FACT_VALUE__</dd>
+                                </div>
+                                <div class="spec">
+                                    <dt>محل تحویل</dt>
+                                    <dd>__ADDRESS__</dd>
+                                </div>
+                                <div class="spec">
+                                    <dt>صاحب کتاب</dt>
+                                    <dd>__OWNER_NAME__</dd>
+                                </div>
+                            </dl>
                         </div>
 
-                        <p class="book-description">__DESCRIPTION__</p>
+                        <div class="detail-card">
+                            <h2 class="block-title">درباره‌ی این کتاب</h2>
+                            <p class="book-description">__DESCRIPTION__</p>
+                        </div>
+
+                        <div class="detail-card">
+                            <h2 class="block-title">امانت در سه قدم</h2>
+                            <ol class="steps">
+                                __STEPS__
+                            </ol>
+                        </div>
+
                     </div>
 
-                    <!-- کارتِ درخواست -->
-                    <div class="request-card">
-                        <div class="request-row">
-                            <span>صاحب کتاب</span>
-                            <span>__OWNER_NAME__</span>
+                    <!-- ستون کنار: کارت درخواست -->
+                    <aside class="book-side">
+                        <div class="request-card">
+                            <div class="owner-block">
+                                <span class="owner-avatar">__OWNER_INITIAL__</span>
+                                <div class="owner-info">
+                                    <span class="owner-label">صاحب کتاب</span>
+                                    <span class="owner-name">__OWNER_NAME__</span>
+                                </div>
+                            </div>
+                            __REQUEST_ROWS__
+
+                            <button type="button" class="request-btn" id="request-btn" data-book-id="__BOOK_ID__">__REQUEST_BTN_LABEL__</button>
+
+                            <button type="button" class="fav-btn" id="fav-btn" data-book-id="__BOOK_ID__" aria-pressed="false">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                    <path d="M12 21.2c-.32 0-.63-.1-.9-.29C9.9 20 3.6 15.4 3.6 10.2 3.6 7.4 5.8 5.2 8.5 5.2c1.4 0 2.7.62 3.5 1.7.8-1.08 2.1-1.7 3.5-1.7 2.7 0 4.9 2.2 4.9 5 0 5.2-6.3 9.8-7.5 10.71-.27.19-.58.29-.9.29Z"
+                                          stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" />
+                                </svg>
+                                <span id="fav-btn-text">ذخیره در علاقه‌مندی‌ها</span>
+                            </button>
+
+                            <div class="request-success" id="request-success">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                <span>درخواستت برای «__TITLE__» ثبت شد و در پنل __OWNER_NAME__ نمایش داده می‌شود. پاسخ را از بخش «درخواست‌ها» در پنل کاربری ببین.</span>
+                            </div>
+                            <p class="request-note" id="request-note" role="status" aria-live="polite"></p>
+
+                            <button type="button" class="request-btn" id="owner-delete-btn" data-book-id="__BOOK_ID__" data-owner-id="__OWNER_ID__" style="display:none; background:var(--pomegranate); margin-top:10px;">حذف این کتاب</button>
                         </div>
-                        __REQUEST_ROWS__
+                    </aside>
 
-                        <button type="button" class="request-btn" id="request-btn" data-book-id="__BOOK_ID__">__REQUEST_BTN_LABEL__</button>
-                        <div class="request-success" id="request-success">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                            <span>درخواستت برای «__TITLE__» ثبت شد و در پنل __OWNER_NAME__ نمایش داده می‌شود. پاسخ را از بخش «درخواست‌ها» در پنل کاربری ببین.</span>
-                        </div>
-                        <p class="request-note" id="request-note" role="status" aria-live="polite"></p>
+                </div>
 
-                        <button type="button" class="request-btn" id="owner-delete-btn" data-book-id="__BOOK_ID__" data-owner-id="__OWNER_ID__" style="display:none; background:var(--pomegranate); margin-top:10px;">حذف این کتاب</button>
-                    </div>
-
+                <!-- کتاب‌های مشابه (از /api/books پر می‌شود) -->
+                <div class="similar-block" id="similar-block" data-genre="__GENRE_VALUE__" data-book-id="__BOOK_ID__" hidden>
+                    <h2 class="block-title">کتاب‌های مشابه</h2>
+                    <div class="similar-list" id="similar-list"></div>
                 </div>
 
                 <!-- بازگشت به فهرست -->
@@ -119,6 +190,46 @@
                     <span class="placeholder">.</span>
                 </div>
 
+            </div>
+        </section>
+
+        <!-- =====================================================
+             امتیاز و نظر — فقط برای کسانی که امانت/خرید را کامل کرده‌اند
+        ===================================================== -->
+        <section class="reviews-section reveal" id="reviews-section" data-book-id="__BOOK_ID__">
+            <div class="wrap">
+                <div class="reviews-head">
+                    <h2>امتیاز و نظر خوانندگان</h2>
+                    <span class="reviews-summary" id="reviews-summary">در حال بارگذاری…</span>
+                </div>
+
+                <form class="review-form" id="review-form" hidden novalidate>
+                    <p class="review-form-title" id="review-form-title">نظرت را ثبت کن</p>
+
+                    <div class="star-picker" id="star-picker" role="group" aria-label="امتیاز از ۱ تا ۵">
+                        <button type="button" class="star" data-value="1" aria-label="۱ ستاره">★</button>
+                        <button type="button" class="star" data-value="2" aria-label="۲ ستاره">★</button>
+                        <button type="button" class="star" data-value="3" aria-label="۳ ستاره">★</button>
+                        <button type="button" class="star" data-value="4" aria-label="۴ ستاره">★</button>
+                        <button type="button" class="star" data-value="5" aria-label="۵ ستاره">★</button>
+                    </div>
+
+                    <textarea id="review-comment" maxlength="700" rows="3"
+                              placeholder="تجربه‌ات از این کتاب و از دست‌به‌دست‌شدنش چطور بود؟"></textarea>
+
+                    <div class="review-form-actions">
+                        <button type="submit" class="review-submit">ثبت نظر</button>
+                        <span class="review-note" id="review-note" role="status" aria-live="polite"></span>
+                    </div>
+                </form>
+
+                <p class="reviews-locked" id="reviews-locked">
+                    ثبت امتیاز و نظر فقط برای کسانی فعال است که امانت یا خرید این کتاب را کامل کرده باشند.
+                </p>
+
+                <div class="reviews-list" id="reviews-list">
+                    <p class="reviews-empty">هنوز نظری ثبت نشده است.</p>
+                </div>
             </div>
         </section>
     </main>

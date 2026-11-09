@@ -1,0 +1,456 @@
+/* =========================================================
+   پنل مدیریت کتاب‌به‌کتاب
+   متغیرها و استایل پایه از login.css و panel.css می‌آید.
+========================================================= */
+
+.admin-body .panel-shell {
+    grid-template-columns: 260px minmax(0, 1fr);
+}
+
+.admin-role {
+    display: inline-block;
+    margin-top: 6px;
+    font-size: 11px;
+    font-weight: 700;
+    color: #6b4f08;
+    background: rgba(201, 152, 47, .22);
+    border-radius: 999px;
+    padding: 2px 10px;
+}
+
+/* ---------- کارت‌های آماری ---------- */
+.admin-stats {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.admin-stats .stat-card {
+    padding: 15px 17px;
+}
+
+.stat-note {
+    display: block;
+    margin-top: 4px;
+    font-size: 11.5px;
+    color: var(--ink-soft);
+}
+
+/* ---------- دو ستون ---------- */
+.admin-two-col {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+    margin-top: 18px;
+}
+
+/* ---------- فهرست‌های فشرده ---------- */
+.admin-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.admin-list--roomy {
+    gap: 10px;
+}
+
+.admin-item {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    padding: 10px 12px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: rgba(255, 255, 255, .5);
+}
+
+.admin-item-main {
+    min-width: 0;
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.admin-item-main strong {
+    font-size: 13.5px;
+    color: var(--teal-900);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.admin-item-main span {
+    font-size: 12px;
+    color: var(--ink-soft);
+}
+
+.admin-avatar-sm {
+    flex: none;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    background: var(--teal-700);
+    color: #F7F1E1;
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.admin-item-side {
+    flex: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: var(--ink-soft);
+}
+
+/* ---------- نوار ابزار و ورودی‌ها ---------- */
+.admin-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 14px;
+}
+
+.admin-input {
+    flex: 1 1 240px;
+    min-width: 0;
+    border: 1px solid var(--line);
+    border-radius: 11px;
+    background: #fff;
+    padding: 10px 14px;
+    font-family: inherit;
+    font-size: 13.5px;
+    color: var(--ink);
+}
+
+.admin-input:focus {
+    outline: 2px solid rgba(27, 96, 98, .3);
+    outline-offset: 1px;
+}
+
+.admin-select {
+    flex: 0 0 220px;
+    cursor: pointer;
+}
+
+/* ---------- جدول ---------- */
+.admin-table-wrap {
+    overflow-x: auto;
+    border: 1px solid var(--line);
+    border-radius: 13px;
+    background: rgba(255, 255, 255, .45);
+}
+
+.admin-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    min-width: 720px;
+}
+
+.admin-table th {
+    text-align: right;
+    font-size: 11.5px;
+    font-weight: 700;
+    color: var(--ink-soft);
+    background: rgba(243, 233, 210, .85);
+    padding: 11px 14px;
+    border-bottom: 1px solid var(--line);
+    white-space: nowrap;
+}
+
+.admin-table td {
+    padding: 11px 14px;
+    border-bottom: 1px solid #EFE4C9;
+    vertical-align: middle;
+}
+
+.admin-table tbody tr:last-child td {
+    border-bottom: 0;
+}
+
+.admin-table tbody tr:hover {
+    background: rgba(201, 152, 47, .07);
+}
+
+.admin-cell-main {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    min-width: 0;
+}
+
+.admin-cell-main strong {
+    font-size: 13px;
+    color: var(--teal-900);
+    font-weight: 700;
+}
+
+.admin-cell-main span {
+    font-size: 11.5px;
+    color: var(--ink-soft);
+}
+
+.admin-date-cell {
+    white-space: nowrap;
+    font-size: 12px;
+    color: var(--ink-soft);
+}
+
+.admin-empty {
+    text-align: center;
+    color: var(--ink-soft);
+    font-size: 13px;
+    padding: 26px 10px;
+}
+
+/* ---------- برچسب وضعیت ---------- */
+.admin-pill {
+    display: inline-block;
+    font-size: 11.5px;
+    font-weight: 700;
+    border-radius: 999px;
+    padding: 3px 11px;
+    white-space: nowrap;
+    background: rgba(27, 96, 98, .12);
+    color: var(--teal-800);
+}
+
+.admin-pill.pending { background: rgba(201, 152, 47, .22); color: #6b4f08; }
+.admin-pill.accepted,
+.admin-pill.returned,
+.admin-pill.completed { background: rgba(47, 122, 79, .16); color: #2F7A4F; }
+.admin-pill.rejected,
+.admin-pill.cancelled { background: rgba(167, 59, 46, .13); color: var(--pomegranate); }
+.admin-pill.on_loan { background: rgba(27, 96, 98, .25); color: var(--teal-900); }
+.admin-pill.admin { background: rgba(201, 152, 47, .25); color: #6b4f08; }
+
+/* ---------- دکمه‌های ردیف ---------- */
+.admin-actions {
+    display: flex;
+    gap: 6px;
+    justify-content: flex-end;
+    white-space: nowrap;
+}
+
+.admin-btn {
+    border: 1px solid var(--line);
+    border-radius: 9px;
+    background: transparent;
+    color: var(--teal-800);
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 6px 11px;
+    cursor: pointer;
+    transition: background .16s ease, color .16s ease, border-color .16s ease;
+}
+
+.admin-btn:hover {
+    background: rgba(27, 96, 98, .1);
+}
+
+.admin-btn.danger {
+    color: var(--pomegranate);
+    border-color: rgba(167, 59, 46, .35);
+}
+
+.admin-btn.danger:hover {
+    background: var(--pomegranate);
+    border-color: var(--pomegranate);
+    color: #fff;
+}
+
+.admin-btn:disabled {
+    opacity: .55;
+    cursor: wait;
+}
+
+/* ---------- مودال ---------- */
+.admin-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 120;
+    display: grid;
+    place-items: center;
+    padding: 18px;
+    background: rgba(12, 56, 57, .45);
+    backdrop-filter: blur(2px);
+}
+
+.admin-modal[hidden] {
+    display: none;
+}
+
+.admin-modal-card {
+    width: min(560px, 100%);
+    max-height: 88vh;
+    overflow-y: auto;
+    background: var(--paper-soft);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    box-shadow: 0 30px 60px -30px rgba(12, 56, 57, .7);
+    padding: 20px 22px 22px;
+}
+
+.admin-modal-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.admin-modal-head h2 {
+    font-size: 17px;
+    font-weight: 800;
+    color: var(--teal-900);
+}
+
+.admin-modal-close {
+    border: 0;
+    background: transparent;
+    font-size: 24px;
+    line-height: 1;
+    color: var(--ink-soft);
+    cursor: pointer;
+    padding: 0 4px;
+}
+
+.admin-modal-close:hover {
+    color: var(--pomegranate);
+}
+
+.admin-form {
+    display: grid;
+    gap: 12px;
+}
+
+.admin-form label {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--ink-soft);
+}
+
+.admin-form input,
+.admin-form select,
+.admin-form textarea {
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: #fff;
+    padding: 9px 12px;
+    font-family: inherit;
+    font-size: 13.5px;
+    color: var(--ink);
+}
+
+.admin-form textarea {
+    min-height: 84px;
+    resize: vertical;
+}
+
+.admin-form input:focus,
+.admin-form select:focus,
+.admin-form textarea:focus {
+    outline: 2px solid rgba(27, 96, 98, .3);
+    outline-offset: 1px;
+}
+
+.admin-form-row {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.admin-check {
+    flex-direction: row !important;
+    align-items: center;
+    gap: 8px !important;
+    font-size: 13px;
+    color: var(--teal-900);
+}
+
+.admin-check input {
+    width: 16px;
+    height: 16px;
+    accent-color: var(--teal-700);
+}
+
+.admin-form-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 4px;
+}
+
+.admin-save {
+    border: 0;
+    border-radius: 999px;
+    background: var(--teal-700);
+    color: #F7F1E1;
+    font-family: inherit;
+    font-size: 13.5px;
+    font-weight: 700;
+    padding: 10px 22px;
+    cursor: pointer;
+}
+
+.admin-save:hover {
+    background: var(--teal-800);
+}
+
+.admin-save:disabled {
+    opacity: .6;
+    cursor: wait;
+}
+
+.admin-form-note {
+    margin: 10px 0 0;
+    font-size: 12.5px;
+    color: var(--ink-soft);
+}
+
+.admin-form-note.bad {
+    color: var(--pomegranate);
+    font-weight: 600;
+}
+
+.admin-form-note.ok {
+    color: #2F7A4F;
+    font-weight: 600;
+}
+
+/* ---------- موبایل ---------- */
+@media (max-width: 980px) {
+    .admin-body .panel-shell {
+        grid-template-columns: 1fr;
+    }
+
+    .admin-two-col {
+        grid-template-columns: 1fr;
+    }
+
+    .admin-stats {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 620px) {
+    .admin-stats {
+        grid-template-columns: 1fr;
+    }
+
+    .admin-form-row {
+        grid-template-columns: 1fr;
+    }
+
+    .admin-select {
+        flex: 1 1 100%;
+    }
+}

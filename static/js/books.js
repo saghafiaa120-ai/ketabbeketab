@@ -27,21 +27,8 @@
             revealEls.forEach(el => el.classList.add('visible'));
         }
 
-        /* ---------- کلیک‌پذیر کردن کل باکس کتاب‌ها ----------
-           هر .book-card به‌ترتیبِ ظاهرشدن در صفحه، داخل یک <a> پیچیده می‌شود
-           و href آن به‌صورت خودکار book1.html، book2.html، ... تنظیم می‌شود.
-           این شماره‌گذاری فقط یک‌بار و بر اساس ترتیبِ اصلیِ کتاب‌ها در HTML
-           انجام می‌شود، بنابراین با فیلتر کردن یا جست‌وجو تغییر نمی‌کند. */
-        const bookCards = Array.from(document.querySelectorAll('#book-grid .book-card'));
-
-        bookCards.forEach((card, index) => {
-            const bookNumber = index + 1;
-            const bookLink = document.createElement('a');
-            bookLink.href = `books/book${bookNumber}.html`;
-            bookLink.className = 'book-card-link';
-            card.parentNode.insertBefore(bookLink, card);
-            bookLink.appendChild(card);
-        });
+        /* همه‌ی کارت‌های کتاب از /api/books ساخته می‌شوند (کتاب‌های نمونه هم در
+           دیتابیس ثبت شده‌اند)، بنابراین اینجا کارتی برای پیچیدن در <a> نیست. */
 
         /* ---------- جست‌وجو و فیلترِ واقعیِ کتاب‌ها ---------- */
         const searchInput = document.getElementById('search-input');
@@ -68,7 +55,8 @@
             }
         });
 
-        let bookLinks = Array.from(document.querySelectorAll('#book-grid .book-card-link'));
+        let bookLinks = [];
+        let booksLoaded = false;
 
         function applyFilters() {
             const query = searchInput.value.trim().toLowerCase();
@@ -93,6 +81,8 @@
 
                 if (isMatch) visibleCount++;
             });
+
+            if (!booksLoaded) return;
 
             resultsMeta.innerHTML = visibleCount > 0
                 ? `<strong>${visibleCount}</strong> کتاب پیدا شد`
@@ -140,6 +130,33 @@
             badge.textContent = shareTypeLabels[book.shareType] || book.shareType;
             coverPh.appendChild(badge);
 
+            /* قلبِ علاقه‌مندی: با کلیک روی کارت، صفحه‌ی کتاب باز نشود. */
+            const favBtn = document.createElement('button');
+            favBtn.type = 'button';
+            favBtn.className = 'fav-toggle' + (book.isFavorite ? ' active' : '');
+            favBtn.dataset.bookId = book.id;
+            favBtn.setAttribute('aria-pressed', String(Boolean(book.isFavorite)));
+            favBtn.setAttribute('aria-label', 'ذخیره در علاقه‌مندی‌ها');
+            favBtn.innerHTML =
+                '<svg viewBox="0 0 24 24" aria-hidden="true">' +
+                '<path class="heart-shape" d="M12 21.2c-.32 0-.63-.1-.9-.29C9.9 20 3.6 15.4 3.6 10.2 3.6 7.4 5.8 5.2 8.5 5.2c1.4 0 2.7.62 3.5 1.7.8-1.08 2.1-1.7 3.5-1.7 2.7 0 4.9 2.2 4.9 5 0 5.2-6.3 9.8-7.5 10.71-.27.19-.58.29-.9.29Z" />' +
+                '</svg>';
+            favBtn.addEventListener('click', async (event) => {
+                event.preventDefault();
+                event.stopPropagation();
+
+                const res = await fetch(`/api/books/${book.id}/favorite`, { method: 'POST' });
+                const data = await res.json().catch(() => ({}));
+                if (res.status === 401) {
+                    location.href = '/login.html';
+                    return;
+                }
+                if (!res.ok) return;
+                favBtn.classList.toggle('active', Boolean(data.favorited));
+                favBtn.setAttribute('aria-pressed', String(Boolean(data.favorited)));
+            });
+            coverPh.appendChild(favBtn);
+
             if (book.cover) {
                 const img = document.createElement('img');
                 img.src = book.cover;
@@ -172,6 +189,29 @@
             info.appendChild(titleEl);
             info.appendChild(authorEl);
             info.appendChild(locEl);
+
+            if (book.ratingCount) {
+                const ratingEl = document.createElement('p');
+                ratingEl.className = 'rating-line';
+
+                const stars = document.createElement('span');
+                stars.className = 'rating-stars';
+                const rounded = Math.round(book.ratingAvg);
+                for (let i = 1; i <= 5; i += 1) {
+                    const star = document.createElement('span');
+                    star.className = i <= rounded ? 'on' : 'off';
+                    star.textContent = '★';
+                    stars.appendChild(star);
+                }
+
+                const fa = (v) => String(v).replace(/[0-9]/g, (d) => '۰۱۲۳۴۵۶۷۸۹'[Number(d)]);
+                const caption = document.createElement('span');
+                caption.textContent = ' ' + fa(book.ratingAvg) + ' (' + fa(book.ratingCount) + ')';
+
+                ratingEl.append(stars, caption);
+                info.appendChild(ratingEl);
+            }
+
             info.appendChild(detailsEl);
 
             card.appendChild(coverPh);
@@ -181,10 +221,13 @@
         }
 
         async function loadServerBooks() {
+            const loading = document.getElementById('books-loading');
             try {
                 const res = await fetch('/api/books?per_page=100');
-                if (!res.ok) return;
+                if (!res.ok) throw new Error('bad response');
                 const books = await res.json();
+
+                if (loading) loading.remove();
 
                 books.forEach(book => {
                     const cardEl = buildServerBookCard(book);
@@ -192,9 +235,12 @@
                 });
 
                 bookLinks = Array.from(document.querySelectorAll('#book-grid .book-card-link'));
+                booksLoaded = true;
                 applyFilters();
             } catch (err) {
-                /* بک‌اند در دسترس نیست؛ فقط کتاب‌های نمونه نمایش داده می‌شوند */
+                if (loading) {
+                    loading.textContent = 'بارگذاری کتاب‌ها انجام نشد. مطمئن شو سرور در حال اجراست و صفحه را دوباره باز کن.';
+                }
             }
         }
 

@@ -1,8 +1,79 @@
+# =========================================================
+#  فایل‌هایی که نباید روی گیت‌هاب بروند
+#  (هیچ‌کدام از این‌ها نباید commit شوند)
+# =========================================================
+
+# ---------- ۱) اطلاعات حساس و رمزها ----------
+# فایل تنظیمات واقعی: رمز دیتابیس، SECRET_KEY و رمز پنل مدیریت داخلش است.
+.env
+.env.*
+!.env.example
+.env.local
+.env.production
+*.pem
+*.key
+*.p12
+secrets/
+credentials.json
+client_secret*.json
+
+# ---------- ۲) داده‌ی کاربران ----------
+# جلدهایی که کاربران آپلود می‌کنند (عکس شخصی/کتاب آن‌ها).
+# فقط جلدهای کتاب‌های نمونه که جزو خود پروژه‌اند نگه داشته می‌شوند.
+/covers/*
+!/covers/20000-farsang.jpg
+!/covers/3a604bbbf5d5e636edec4f5a33f61bc40b7c8c73_1684874096.jpg
+!/covers/arbab-halgheha.jpg
+!/covers/bahosh.jpg
+!/covers/kelileh.jpg
+!/covers/modir-madrese.jpg
+!/covers/oliver-twist.jpg
+!/covers/sad-sal-tanhaei.jpg
+!/covers/shahnameh-teen.jpg
+!/covers/shazde-koochooloo.jpg
+
+# صفحه‌های HTML که برای هر کتاب از محتوای کاربر ساخته می‌شوند.
+/pages/
+
+# ---------- ۳) دیتابیس و بکاپ‌ها ----------
+*.sql.bak
+*.dump
+*.sql.gz
+backup/
+backups/
+dumps/
+data/
+uploads/
+
+# ---------- ۴) پایتون ----------
 __pycache__/
 *.py[cod]
+*$py.class
 .venv/
 venv/
-.env
-instance/
-*.log
+env/
+ENV/
+.python-version
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# ---------- ۵) ابزارهای ادیتور و سیستم ----------
+.vscode/
+.idea/
+*.swp
+*.swo
 .DS_Store
+Thumbs.db
+desktop.ini
+
+# ---------- ۶) لاگ و فایل‌های موقت ----------
+*.log
+logs/
+*.tmp
+tmp/
+instance/
+
+# ---------- ۷) ابزارهای دستیار (یادداشت‌های پروژه) ----------
+.workbuddy-ai/
+.claude/

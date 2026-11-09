@@ -1,0 +1,216 @@
+/* =========================================================
+   اعلان‌های داخل سایت — زنگ و کشوی اعلان در هدر
+========================================================= */
+
+.notif-wrap {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+}
+
+.notif-btn {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    border: 1px solid rgba(216, 201, 163, .9);
+    border-radius: 50%;
+    background: #FAF4E6;
+    color: #124B4C;
+    cursor: pointer;
+    transition: background .18s ease, border-color .18s ease, transform .18s ease;
+}
+
+.notif-btn:hover,
+.notif-btn[aria-expanded="true"] {
+    background: #fff;
+    border-color: #C9982F;
+    transform: translateY(-1px);
+}
+
+.notif-btn.has-unread {
+    border-color: #C9982F;
+}
+
+.notif-badge {
+    position: absolute;
+    top: -4px;
+    inset-inline-end: -4px;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 4px;
+    border-radius: 999px;
+    background: #A73B2E;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 18px;
+    text-align: center;
+    font-family: 'Vazirmatn', system-ui, sans-serif;
+}
+
+.notif-panel {
+    /* هدر سایت white-space: nowrap دارد؛ متن اعلان‌ها باید بشکند. */
+    white-space: normal;
+    position: absolute;
+    top: calc(100% + 10px);
+    inset-inline-start: 0;
+    width: 330px;
+    max-width: calc(100vw - 28px);
+    background: #FAF4E6;
+    border: 1px solid #D8C9A3;
+    border-radius: 14px;
+    box-shadow: 0 18px 40px -18px rgba(12, 56, 57, .45);
+    z-index: 90;
+    overflow: hidden;
+    font-family: 'Vazirmatn', system-ui, -apple-system, 'Segoe UI', sans-serif;
+}
+
+.notif-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 12px 14px;
+    background: #F3E9D2;
+    border-bottom: 1px solid #E4D7B8;
+}
+
+.notif-head strong {
+    font-size: 14px;
+    color: #1C2B2B;
+}
+
+.notif-mark-all {
+    border: 0;
+    background: transparent;
+    color: #1B6062;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    padding: 2px 4px;
+}
+
+.notif-mark-all:hover {
+    color: #0C3839;
+    text-decoration: underline;
+}
+
+.notif-list {
+    max-height: 360px;
+    overflow-y: auto;
+}
+
+.notif-item {
+    display: flex;
+    gap: 10px;
+    padding: 11px 14px;
+    border-bottom: 1px solid #EFE4C9;
+    text-decoration: none;
+    color: inherit;
+    cursor: pointer;
+    transition: background .15s ease;
+}
+
+.notif-item:last-child {
+    border-bottom: 0;
+}
+
+.notif-item:hover {
+    background: #F6EDD9;
+}
+
+.notif-item.unread {
+    background: rgba(201, 152, 47, .10);
+}
+
+.notif-item.unread:hover {
+    background: rgba(201, 152, 47, .18);
+}
+
+.notif-icon {
+    flex: 0 0 auto;
+    width: 30px;
+    height: 30px;
+    display: grid;
+    place-items: center;
+    border-radius: 9px;
+    background: #fff;
+    border: 1px solid #E4D7B8;
+    color: #1B6062;
+}
+
+.notif-icon svg {
+    width: 16px;
+    height: 16px;
+}
+
+.notif-icon--request_new { color: #1B6062; }
+.notif-icon--request_status { color: #8a6a12; }
+.notif-icon--due_soon { color: #A73B2E; background: #FDF6E7; }
+.notif-icon--review { color: #8a6a12; }
+
+.notif-body {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.notif-body strong {
+    white-space: normal;
+    font-size: 13px;
+    font-weight: 700;
+    color: #1C2B2B;
+    line-height: 1.5;
+}
+
+.notif-body span {
+    white-space: normal;
+    font-size: 12px;
+    color: #4B5B5A;
+    line-height: 1.65;
+    overflow-wrap: anywhere;
+}
+
+.notif-body small {
+    font-size: 11px;
+    color: #8A9491;
+}
+
+.notif-empty {
+    padding: 22px 14px;
+    text-align: center;
+    font-size: 13px;
+    color: #4B5B5A;
+    margin: 0;
+}
+
+@media (max-width: 640px) {
+    .notif-panel {
+        position: fixed;
+        top: 74px;
+        inset-inline: 12px;
+        width: auto;
+    }
+}
+
+/* نشان درخواست‌های در انتظار، کنار نام کاربر در هدر */
+.nav-user-badge {
+    display: inline-block;
+    margin-inline-start: 6px;
+    min-width: 18px;
+    padding: 0 5px;
+    border-radius: 999px;
+    background: #A73B2E;
+    color: #fff;
+    font-size: 11px;
+    line-height: 18px;
+    text-align: center;
+    vertical-align: middle;
+}

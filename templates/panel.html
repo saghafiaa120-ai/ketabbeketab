@@ -94,11 +94,26 @@
                             درخواست‌ها
                             <span class="nav-badge" id="requests-badge">۰</span>
                         </button>
+                        <button type="button" class="panel-nav-item" data-tab="loans">
+                            <svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M4 6h9a3 3 0 0 1 3 3v11H7a3 3 0 0 1-3-3V6Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M16 9h3v11h-8" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M8 10h5M8 14h4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+                            پیگیری امانت
+                            <span class="nav-badge" id="loans-badge">۰</span>
+                        </button>
+                        <button type="button" class="panel-nav-item" data-tab="favorites">
+                            <svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M12 20s-7-4.35-7-9.5A4.5 4.5 0 0 1 12 7a4.5 4.5 0 0 1 7 3.5C19 15.65 12 20 12 20Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+                            علاقه‌مندی‌ها
+                            <span class="nav-badge" id="favorites-badge">۰</span>
+                        </button>
                         <button type="button" class="panel-nav-item" data-tab="settings">
                             <svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" stroke="currentColor" stroke-width="1.8"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1 1.55V21a2 2 0 1 1-4 0v-.09a1.7 1.7 0 0 0-1.11-1.55 1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-1.55-1H3a2 2 0 1 1 0-4h.09A1.7 1.7 0 0 0 4.6 8.9a1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.7 1.7 0 0 0 1.87.34H9a1.7 1.7 0 0 0 1-1.55V3a2 2 0 1 1 4 0v.09a1.7 1.7 0 0 0 1 1.55 1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.7 1.7 0 0 0-.34 1.87V9a1.7 1.7 0 0 0 1.55 1H21a2 2 0 1 1 0 4h-.09a1.7 1.7 0 0 0-1.51 1Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
                             تنظیمات حساب
                         </button>
                     </nav>
+
+                    <a class="panel-cta panel-cta--admin" id="admin-link" href="{{ url_for('serve_static_file', filename='admin.html') }}" hidden>
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M12 3l7 3v5c0 4.2-2.9 7.9-7 9-4.1-1.1-7-4.8-7-9V6l7-3Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M9.4 12.2l1.9 1.9 3.4-3.6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        پنل مدیریت
+                    </a>
 
                     <a class="panel-cta" href="{{ url_for('serve_static_file', filename='upload.html') }}">
                         <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>
@@ -117,6 +132,12 @@
                             <span class="notice-dot" aria-hidden="true"></span>
                             <span id="requests-notice-text">درخواست جدید داری</span>
                             <span class="notice-arrow">مشاهده ←</span>
+                        </button>
+
+                        <button type="button" class="notice-bar notice-bar--due" id="due-notice" data-goto="loans" hidden>
+                            <span class="notice-dot" aria-hidden="true"></span>
+                            <span id="due-notice-text">موعد بازگشت یک امانت نزدیک است</span>
+                            <span class="notice-arrow">پیگیری ←</span>
                         </button>
 
                         <div class="stat-grid">
@@ -193,6 +214,45 @@
                             <div class="request-list" id="outgoing-list">
                                 <p class="panel-empty">در حال بارگذاری…</p>
                             </div>
+                        </div>
+                    </div>
+
+                    <!-- پیگیری امانت -->
+                    <div class="panel-tab" id="tab-loans">
+                        <div class="panel-card">
+                            <div class="panel-card-head">
+                                <h2>امانت‌های در جریان</h2>
+                                <span class="muted" id="loans-meta">‌</span>
+                            </div>
+                            <div class="loan-summary" id="loan-summary" hidden></div>
+                            <div class="request-list" id="loans-active-list">
+                                <p class="panel-empty">در حال بارگذاری…</p>
+                            </div>
+                        </div>
+
+                        <div class="panel-card">
+                            <div class="panel-card-head">
+                                <h2>تاریخچه‌ی امانت و خرید</h2>
+                                <span class="muted" id="loans-history-meta">‌</span>
+                            </div>
+                            <div class="request-list" id="loans-history-list">
+                                <p class="panel-empty">در حال بارگذاری…</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- علاقه‌مندی‌ها -->
+                    <div class="panel-tab" id="tab-favorites">
+                        <div class="panel-card">
+                            <div class="panel-card-head">
+                                <h2>کتاب‌های ذخیره‌شده</h2>
+                                <span class="muted" id="favorites-meta">‌</span>
+                            </div>
+                            <div class="my-books-grid" id="favorites-grid"></div>
+                            <p class="panel-empty" id="favorites-empty" hidden>
+                                هنوز کتابی را ذخیره نکرده‌ای. در فهرست کتاب‌ها روی قلب بزن تا اینجا ببینی.
+                                <a href="{{ url_for('serve_static_file', filename='books.html') }}">رفتن به فهرست کتاب‌ها</a>
+                            </p>
                         </div>
                     </div>
 
@@ -275,6 +335,7 @@
         </div>
     </footer>
 
+    <script src="{{ url_for('static', filename='js/notifications.js') }}" defer></script>
     <script src="{{ url_for('static', filename='js/panel.js') }}" defer></script>
 
 </body>
