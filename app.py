@@ -109,6 +109,17 @@ try:
     DB_POOL = pooling.MySQLConnectionPool(pool_name="ketab_pool", pool_size=5, **DB_CONFIG)
 except MySQLError:
     DB_POOL = None
+    app.logger.warning(
+        "MySQL connection pool initialization failed. Check DB_HOST, DB_USER, "
+        "DB_PASSWORD, DB_NAME and ensure the database service is running.",
+        exc_info=True,
+    )
+
+if not os.getenv("DB_HOST"):
+    app.logger.warning(
+        "DB_HOST is not configured; using 127.0.0.1. This is usually incorrect "
+        "when Flask and MySQL run as separate hosted services."
+    )
 
 BOOK_REQUESTS_TABLE_SQL = """
 CREATE TABLE IF NOT EXISTS book_requests (
@@ -212,6 +223,60 @@ def ensure_column(cur, table, column, ddl):
         cur.execute(ddl)
 
 
+USERS_TABLE_SQL = """
+CREATE TABLE IF NOT EXISTS users (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    email VARCHAR(255) NOT NULL UNIQUE,
+    phone VARCHAR(20) NULL,
+    password_hash VARCHAR(255) NOT NULL,
+    is_admin TINYINT(1) NOT NULL DEFAULT 0,
+    last_login_at DATETIME NULL,
+    login_count INT NOT NULL DEFAULT 0,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_users_created_at (created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+"""
+
+BOOKS_TABLE_SQL = """
+CREATE TABLE IF NOT EXISTS books (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    title VARCHAR(255) NOT NULL,
+    author VARCHAR(255) NOT NULL,
+    genre VARCHAR(50) NOT NULL,
+    book_condition VARCHAR(50) NOT NULL,
+    share_type VARCHAR(20) NOT NULL DEFAULT 'free',
+    duration INT NULL,
+    deposit_amount INT NULL,
+    sale_price INT NULL,
+    address VARCHAR(500) NOT NULL,
+    description TEXT NULL,
+    cover VARCHAR(255) NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_books_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    INDEX idx_books_user_created (user_id, created_at),
+    INDEX idx_books_genre (genre),
+    INDEX idx_books_share_type (share_type)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+"""
+
+
+def ensure_base_schema():
+    """جدول‌های اصلی را در اولین اجرا می‌سازد؛ خود دیتابیس باید قبلاً در هاست ساخته شده باشد."""
+    try:
+        with db_cursor() as (db, cur):
+            cur.execute(USERS_TABLE_SQL)
+            cur.execute(BOOKS_TABLE_SQL)
+            db.commit()
+        app.logger.info("Base database tables are ready.")
+    except MySQLError:
+        app.logger.exception(
+            "Could not create base database tables. Verify that the MySQL database "
+            "exists and DB_HOST, DB_USER, DB_PASSWORD and DB_NAME are correct."
+        )
+
+
 def ensure_schema():
     """جدول‌های تازه را در نصب‌های قدیمی هم می‌سازد (اجرای دوباره‌ی schema.sql لازم نیست)."""
     try:
@@ -265,6 +330,7 @@ def health():
             cur.execute("SELECT 1")
         return jsonify(status="ok", database=True)
     except MySQLError:
+        app.logger.exception("Database health check failed")
         return jsonify(status="degraded", database=False), 503
 
 
@@ -2503,7 +2569,9 @@ def admin_delete_request(request_id):
     return jsonify(success=True)
 
 
-# جدول درخواست‌ها در اولین اجرا (یا نصب‌های قدیمی) ساخته می‌شود.
+# ابتدا جدول‌های اصلی و سپس جدول‌های وابسته/تکمیلی ساخته می‌شوند.
+# دیتابیس و مجوزهای کاربر MySQL باید از پنل هاست آماده شده باشند.
+ensure_base_schema()
 ensure_schema()
 # کتاب‌های نمونه یک‌بار به دیتابیس اضافه می‌شوند تا صفحه‌شان واقعی باشد.
 seed_demo_books()
