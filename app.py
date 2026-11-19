@@ -23,6 +23,7 @@ from threading import Lock
 from html import escape
 from contextlib import contextmanager
 from functools import wraps
+from urllib.parse import unquote, urlsplit
 from datetime import date, datetime, timedelta
 from decimal import Decimal, InvalidOperation
 from flask import Flask, request, jsonify, session, send_from_directory, render_template, abort, Response
@@ -37,13 +38,46 @@ except ImportError:  # وابستگی در requirements نصب می‌شود؛ �
     UnidentifiedImageError = Exception
 
 # ---------- تنظیمات ----------
-DB_CONFIG = {
-    "host": os.getenv("DB_HOST", "127.0.0.1"),
-    "user": os.getenv("DB_USER", "root"),
-    "password": os.getenv("DB_PASSWORD", ""),
-    "database": os.getenv("DB_NAME", "ketabbeketab"),
-    "autocommit": False,
-}
+def build_db_config():
+    """
+    تنظیمات اتصال را از DATABASE_URL افزونه‌ی مدیریت‌شده‌ی EthioDeploy
+    یا متغیرهای جداگانه‌ی DB_* برای اجرای محلی می‌خواند.
+    """
+    database_url = os.getenv("DATABASE_URL") or os.getenv("DB_URL")
+    if database_url:
+        parsed = urlsplit(database_url)
+        if parsed.scheme not in {"mysql", "mysql+mysqlconnector"}:
+            raise ValueError("DATABASE_URL must use the mysql:// scheme")
+        if not parsed.hostname or not parsed.username or not parsed.path.strip("/"):
+            raise ValueError("DATABASE_URL must include username, host and database name")
+
+        try:
+            port = parsed.port or 3306
+        except ValueError as exc:
+            raise ValueError("DATABASE_URL contains an invalid port") from exc
+
+        return {
+            "host": parsed.hostname,
+            "port": port,
+            "user": unquote(parsed.username),
+            "password": unquote(parsed.password or ""),
+            "database": unquote(parsed.path.lstrip("/")),
+            "charset": "utf8mb4",
+            "autocommit": False,
+        }
+
+    return {
+        "host": os.getenv("DB_HOST", "127.0.0.1"),
+        "port": int(os.getenv("DB_PORT", "3306")),
+        "user": os.getenv("DB_USER", "root"),
+        "password": os.getenv("DB_PASSWORD", ""),
+        "database": os.getenv("DB_NAME", "ketabbeketab"),
+        "charset": "utf8mb4",
+        "autocommit": False,
+    }
+
+
+DB_CONFIG = build_db_config()
 MAX_UPLOADS_PER_HOUR = int(os.getenv("MAX_UPLOADS_PER_HOUR", "20"))
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -130,19 +164,24 @@ def create_database_if_missing():
         connection.close()
 
 
-try:
-    create_database_if_missing()
-    app.logger.info("MySQL database is ready.")
-except (MySQLError, ValueError):
-    app.logger.exception(
-        "Could not create or access the MySQL database. Ensure MySQL is running, "
-        "DB_HOST/DB_USER/DB_PASSWORD/DB_NAME are correct, and DB_USER has "
-        "CREATE DATABASE permission."
-    )
+if os.getenv("DATABASE_URL") or os.getenv("DB_URL"):
+    # افزونه‌ی Managed MySQL دیتابیس را از قبل می‌سازد؛
+    # کاربر اتصال معمولاً مجوز CREATE DATABASE ندارد.
+    app.logger.info("Using the managed MySQL database from DATABASE_URL.")
+else:
+    try:
+        create_database_if_missing()
+        app.logger.info("MySQL database is ready.")
+    except (MySQLError, ValueError):
+        app.logger.exception(
+            "Could not create or access the local MySQL database. Ensure MySQL is running, "
+            "DB_HOST/DB_PORT/DB_USER/DB_PASSWORD/DB_NAME are correct, and DB_USER has "
+            "CREATE DATABASE permission."
+        )
 
 try:
     DB_POOL = pooling.MySQLConnectionPool(pool_name="ketab_pool", pool_size=5, **DB_CONFIG)
-except MySQLError:
+except (MySQLError, ValueError):
     DB_POOL = None
     app.logger.warning(
         "MySQL connection pool initialization failed. Check DB_HOST, DB_USER, "
@@ -150,10 +189,10 @@ except MySQLError:
         exc_info=True,
     )
 
-if not os.getenv("DB_HOST"):
+if not (os.getenv("DB_HOST") or os.getenv("DATABASE_URL") or os.getenv("DB_URL")):
     app.logger.warning(
-        "DB_HOST is not configured; using 127.0.0.1. This is usually incorrect "
-        "when Flask and MySQL run as separate hosted services."
+        "No database connection environment variables are configured; "
+        "using the local 127.0.0.1 MySQL defaults."
     )
 
 BOOK_REQUESTS_TABLE_SQL = """
