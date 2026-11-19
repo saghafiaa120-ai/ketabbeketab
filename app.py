@@ -1026,11 +1026,12 @@ def me():
             cur.execute("SELECT name, email, phone FROM users WHERE id=%s", (current_user_id(),))
             user = cur.fetchone()
     except MySQLError:
+        # خطای موقت دیتابیس به معنی حذف‌شدن حساب نیست؛ نشست را حفظ کن.
         app.logger.exception("Loading current user failed")
-        user = None
+        return jsonify(error="امکان بررسی وضعیت ورود در حال حاضر وجود ندارد."), 503
 
     if not user:
-        # کاربر حذف شده است؛ نشست نباید معتبر بماند.
+        # فقط وقتی کوئری موفق بوده و حساب واقعاً وجود ندارد، نشست پاک شود.
         session.clear()
         return jsonify(loggedIn=False)
 
