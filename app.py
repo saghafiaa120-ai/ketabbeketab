@@ -1023,7 +1023,10 @@ def me():
     email = phone = None
     try:
         with db_cursor(dictionary=True) as (_db, cur):
-            cur.execute("SELECT name, email, phone FROM users WHERE id=%s", (current_user_id(),))
+            cur.execute(
+                "SELECT name, email, phone, is_admin FROM users WHERE id=%s",
+                (current_user_id(),),
+            )
             user = cur.fetchone()
     except MySQLError:
         # خطای موقت دیتابیس به معنی حذف‌شدن حساب نیست؛ نشست را حفظ کن.
@@ -1038,6 +1041,9 @@ def me():
     name = user["name"]
     email = user["email"]
     phone = user["phone"]
+    # وضعیت مدیریت همیشه از دیتابیس خوانده می‌شود، نه از نشست قدیمی مرورگر.
+    is_admin = bool(user.get("is_admin"))
+    session["is_admin"] = is_admin
 
     pending_requests = 0
     try:
@@ -1069,7 +1075,7 @@ def me():
         name=name,
         email=email,
         phone=phone,
-        isAdmin=bool(session.get("is_admin")),
+        isAdmin=is_admin,
         pendingRequests=pending_requests,
         unreadNotifications=unread_notifications,
     )
