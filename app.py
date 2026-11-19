@@ -105,6 +105,41 @@ def add_security_headers(response):
     response.headers.setdefault("Referrer-Policy", "strict-origin-when-cross-origin")
     return response
 
+def create_database_if_missing():
+    """
+    دیتابیس را در صورت نبودن می‌سازد.
+    حساب MySQL باید اجازه‌ی CREATE DATABASE داشته باشد.
+    خودِ سرویس/سرور MySQL باید از قبل توسط هاست اجرا شده باشد.
+    """
+    database_name = DB_CONFIG["database"]
+    if not re.fullmatch(r"[A-Za-z0-9_]+", database_name):
+        raise ValueError("DB_NAME may contain only letters, numbers and underscores")
+
+    server_config = {key: value for key, value in DB_CONFIG.items() if key != "database"}
+    connection = mysql.connector.connect(**server_config)
+    try:
+        cursor = connection.cursor()
+        try:
+            cursor.execute(
+                f"CREATE DATABASE IF NOT EXISTS `{database_name}` "
+                "CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci"
+            )
+        finally:
+            cursor.close()
+    finally:
+        connection.close()
+
+
+try:
+    create_database_if_missing()
+    app.logger.info("MySQL database is ready.")
+except (MySQLError, ValueError):
+    app.logger.exception(
+        "Could not create or access the MySQL database. Ensure MySQL is running, "
+        "DB_HOST/DB_USER/DB_PASSWORD/DB_NAME are correct, and DB_USER has "
+        "CREATE DATABASE permission."
+    )
+
 try:
     DB_POOL = pooling.MySQLConnectionPool(pool_name="ketab_pool", pool_size=5, **DB_CONFIG)
 except MySQLError:
