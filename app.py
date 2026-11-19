@@ -119,9 +119,27 @@ RATE_LIMIT_LOCK = Lock()
 
 app = Flask(__name__, static_folder=STATIC_DIR, static_url_path="/static", template_folder=TEMPLATES_DIR)
 configured_secret = os.getenv("SECRET_KEY")
+
+# اگر SECRET_KEY در هاست تنظیم نشده باشد، از DATABASE_URL پایدار مشتق می‌شود
+# تا نشست‌ها بین restartها و workerهای مختلف معتبر بمانند.
+# در محیط production همچنان توصیه می‌شود SECRET_KEY مستقل تنظیم شود.
 if not configured_secret:
-    configured_secret = secrets.token_hex(32)
-    app.logger.warning("SECRET_KEY is not configured; sessions will reset after restart")
+    session_secret_source = os.getenv("DATABASE_URL") or os.getenv("DB_URL")
+    if session_secret_source:
+        import hashlib
+        configured_secret = hashlib.sha256(
+            ("ketabbeketab-session-v1:" + session_secret_source).encode("utf-8")
+        ).hexdigest()
+        app.logger.warning(
+            "SECRET_KEY is not configured; using a stable key derived from DATABASE_URL. "
+            "Set a dedicated SECRET_KEY in the hosting environment."
+        )
+    else:
+        configured_secret = secrets.token_hex(32)
+        app.logger.warning(
+            "SECRET_KEY and DATABASE_URL are not configured; sessions will reset after restart."
+        )
+
 app.config.update(
     SECRET_KEY=configured_secret,
     MAX_CONTENT_LENGTH=5 * 1024 * 1024,
