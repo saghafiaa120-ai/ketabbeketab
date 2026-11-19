@@ -179,15 +179,47 @@ else:
             "CREATE DATABASE permission."
         )
 
-try:
-    DB_POOL = pooling.MySQLConnectionPool(pool_name="ketab_pool", pool_size=5, **DB_CONFIG)
-except (MySQLError, ValueError):
-    DB_POOL = None
-    app.logger.warning(
-        "MySQL connection pool initialization failed. Check DB_HOST, DB_USER, "
-        "DB_PASSWORD, DB_NAME and ensure the database service is running.",
-        exc_info=True,
-    )
+# سرویس MySQL در بعضی هاست‌ها چند ثانیه بعد از اجرای برنامه آماده می‌شود.
+# قبل از ساخت جدول‌ها، اتصال را چند بار با فاصله‌ی کوتاه امتحان می‌کنیم.
+DB_POOL = None
+DB_STARTUP_ATTEMPTS = max(1, int(os.getenv("DB_STARTUP_ATTEMPTS", "10")))
+DB_STARTUP_RETRY_SECONDS = max(1, int(os.getenv("DB_STARTUP_RETRY_SECONDS", "3")))
+
+for startup_attempt in range(1, DB_STARTUP_ATTEMPTS + 1):
+    try:
+        DB_POOL = pooling.MySQLConnectionPool(
+            pool_name="ketab_pool",
+            pool_size=5,
+            **DB_CONFIG,
+        )
+        startup_connection = DB_POOL.get_connection()
+        try:
+            startup_cursor = startup_connection.cursor()
+            startup_cursor.execute("SELECT 1")
+            startup_cursor.fetchone()
+            startup_cursor.close()
+        finally:
+            startup_connection.close()
+
+        app.logger.info("MySQL connection is ready (startup attempt %s).", startup_attempt)
+        break
+    except (MySQLError, ValueError):
+        DB_POOL = None
+        if startup_attempt >= DB_STARTUP_ATTEMPTS:
+            app.logger.exception(
+                "MySQL did not become available after %s startup attempts. "
+                "Database initialization will be skipped for this process.",
+                DB_STARTUP_ATTEMPTS,
+            )
+        else:
+            app.logger.warning(
+                "MySQL is not ready (startup attempt %s/%s); retrying in %s seconds.",
+                startup_attempt,
+                DB_STARTUP_ATTEMPTS,
+                DB_STARTUP_RETRY_SECONDS,
+                exc_info=True,
+            )
+            time.sleep(DB_STARTUP_RETRY_SECONDS)
 
 if not (os.getenv("DB_HOST") or os.getenv("DATABASE_URL") or os.getenv("DB_URL")):
     app.logger.warning(
@@ -2643,10 +2675,17 @@ def admin_delete_request(request_id):
     return jsonify(success=True)
 
 
-# ابتدا جدول‌های اصلی و سپس جدول‌های وابسته/تکمیلی ساخته می‌شوند.
-# دیتابیس و مجوزهای کاربر MySQL باید از پنل هاست آماده شده باشند.
-ensure_base_schema()
-ensure_schema()
+# با هر بار اجرای برنامه، جدول‌های اصلی و تکمیلی به‌صورت خودکار بررسی/ایجاد می‌شوند.
+# در MySQL مدیریت‌شده، خود دیتابیس را هاست می‌سازد و اینجا جدول‌ها ایجاد می‌شوند.
+# در نصب محلی، create_database_if_missing بالاتر دیتابیس را هم در صورت نیاز می‌سازد.
+if DB_POOL is not None:
+    ensure_base_schema()
+    ensure_schema()
+else:
+    app.logger.error(
+        "Database tables were not initialized because MySQL is unavailable. "
+        "Restart the application after fixing the database connection."
+    )
 # کتاب‌های نمونه یک‌بار به دیتابیس اضافه می‌شوند تا صفحه‌شان واقعی باشد.
 seed_demo_books()
 # حساب مدیر (پنل مدیریت) تضمین می‌شود.
